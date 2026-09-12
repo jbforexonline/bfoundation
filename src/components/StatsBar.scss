@@ -1,0 +1,79 @@
+@use '../styles/variables' as *;
+
+.stats-bar {
+  border-top: 1px solid $color-border;
+  border-bottom: 1px solid $color-border;
+  background: $color-bg-panel;
+
+  &__inner {
+    @include container;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding: 32px $gutter;
+  }
+
+  &__item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 0 20px;
+    border-left: 1px solid $color-border;
+
+    &:first-child {
+      border-left: none;
+      padding-left: 0;
+    }
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(240, 169, 58, 0.12);
+    color: $color-gold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-family: $font-heading;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: $color-white;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: $color-text;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  &__sub {
+    font-size: 0.7rem;
+    color: $color-text-faint;
+    margin-top: 4px;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__inner {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__item {
+      border-left: none;
+      padding-left: 0;
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+}

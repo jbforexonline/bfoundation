@@ -1,0 +1,186 @@
+@use '../styles/variables' as *;
+
+.footer {
+  border-top: 1px solid $color-border;
+  padding-top: 44px;
+  margin-top: 32px;
+
+  &__inner {
+    @include container;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr;
+    gap: 28px;
+    padding-bottom: 32px;
+  }
+
+  &__logo-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  &__logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, $color-gold-bright, $color-gold-dark);
+    color: #1a1400;
+    font-family: $font-heading;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__brand-name {
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-white;
+    font-size: 0.95rem;
+  }
+
+  &__brand-tag {
+    font-size: 0.68rem;
+    color: $color-text-faint;
+    line-height: 1.4;
+
+    &--green {
+      color: $color-green;
+    }
+  }
+
+  &__socials {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+
+    a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid $color-border;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $color-text-muted;
+      transition: color 0.15s ease, border-color 0.15s ease;
+
+      &:hover {
+        color: $color-gold;
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  &__col {
+    h4 {
+      font-size: 0.85rem;
+      color: $color-white;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    li {
+      font-size: 0.8rem;
+      color: $color-text-muted;
+
+      a:hover {
+        color: $color-gold;
+      }
+    }
+  }
+
+  &__more {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    margin-top: 12px;
+  }
+
+  &__newsletter {
+    p {
+      font-size: 0.78rem;
+      color: $color-text-muted;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input {
+      background: $color-bg-panel;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      padding: 10px 12px;
+      color: $color-text;
+      font-size: 0.82rem;
+
+      &::placeholder {
+        color: $color-text-faint;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  &__bottom {
+    border-top: 1px solid $color-border;
+    @include container;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    flex-wrap: wrap;
+  }
+
+  &__lang {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    select {
+      background: transparent;
+      border: none;
+      color: $color-text-faint;
+      font-size: 0.75rem;
+
+      option {
+        background: $color-bg;
+      }
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    &__inner {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__inner {
+      grid-template-columns: 1fr;
+    }
+
+    &__bottom {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+}

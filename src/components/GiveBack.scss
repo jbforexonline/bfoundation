@@ -1,0 +1,96 @@
+@use '../styles/variables' as *;
+
+.give-back {
+  &__inner {
+    @include container;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    background: $color-bg-panel;
+    border: 1px solid $color-border-soft;
+    border-radius: $radius-lg;
+    padding: 26px 32px;
+    flex-wrap: wrap;
+  }
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(240, 169, 58, 0.12);
+    color: $color-gold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__copy {
+    flex: 1 1 260px;
+
+    h3 {
+      color: $color-gold;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+
+    p {
+      color: $color-text-muted;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      max-width: 40ch;
+    }
+  }
+
+  &__math {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1 1 380px;
+    justify-content: center;
+  }
+
+  &__figure {
+    text-align: center;
+  }
+
+  &__label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-text-faint;
+  }
+
+  &__value {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 1rem;
+    color: $color-white;
+    margin-top: 4px;
+
+    &--total {
+      color: $color-gold;
+    }
+  }
+
+  &__op {
+    color: $color-gold;
+    flex-shrink: 0;
+  }
+
+  &__cta {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__inner {
+      justify-content: center;
+      text-align: center;
+    }
+
+    &__math {
+      justify-content: center;
+    }
+  }
+}

@@ -1,0 +1,129 @@
+@use '../../styles/variables' as *;
+
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.78);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+
+  &__card {
+    position: relative;
+    width: 100%;
+    max-width: 880px;
+    max-height: 92vh;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    background: $color-bg;
+    border: 1px solid $color-border-soft;
+    border-radius: $radius-lg;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), $shadow-gold-glow;
+  }
+
+  &__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: $color-bg-panel;
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    &:hover {
+      color: $color-gold;
+      border-color: $color-gold;
+    }
+  }
+
+  &__brand {
+    background: linear-gradient(160deg, #1a1006, #0a0a0a 70%);
+    border-right: 1px solid $color-border-soft;
+    padding: 40px 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__brand-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, $color-gold-bright, $color-gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #1a1400;
+  }
+
+  h2 {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  &__line {
+    &--white { color: $color-white; }
+    &--gold { color: $color-gold; }
+    &--green { color: $color-green; }
+  }
+
+  &__brand p {
+    color: $color-text-muted;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  &__pillars {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: $color-text-muted;
+
+      svg {
+        color: $color-gold;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__panel {
+    padding: 40px 34px;
+  }
+
+  @media (max-width: $bp-md) {
+    &__card {
+      grid-template-columns: 1fr;
+    }
+
+    &__brand {
+      display: none;
+    }
+
+    &__panel {
+      padding: 60px 24px 32px;
+    }
+  }
+}

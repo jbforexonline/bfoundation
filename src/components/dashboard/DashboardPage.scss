@@ -1,0 +1,160 @@
+@use '../../styles/variables' as *;
+
+.dash-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  &__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $color-white;
+  }
+
+  &__subtitle {
+    color: $color-text-muted;
+    font-size: 0.88rem;
+    margin-top: 4px;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  &__section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $color-white;
+    margin-bottom: 14px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__stats,
+    &__card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__stats,
+    &__card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// A single row item used for notifications, event tickets, favorites, etc.
+.dash-item {
+  @include card-panel;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(240, 169, 58, 0.12);
+    color: $color-gold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: $color-white;
+  }
+
+  &__meta {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    margin-top: 3px;
+  }
+
+  &--unread {
+    border-color: $color-gold;
+  }
+
+  &__action {
+    flex-shrink: 0;
+  }
+}
+
+// Contestant-style card used in Favorites.
+.mini-contestant-card {
+  @include card-panel;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 16px;
+
+  &__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-border-soft;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text-muted;
+    margin-bottom: 10px;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: $color-white;
+  }
+
+  &__category {
+    font-size: 0.72rem;
+    color: $color-gold;
+    margin-top: 3px;
+  }
+
+  &__votes {
+    font-size: 0.7rem;
+    color: $color-text-faint;
+    margin-top: 3px;
+  }
+
+  &__remove {
+    margin-top: 12px;
+    width: 100%;
+  }
+}

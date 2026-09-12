@@ -1,0 +1,47 @@
+@use '../styles/variables' as *;
+
+.rwanda-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  &__art {
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    border: 1px solid $color-border-soft;
+    box-shadow: $shadow-gold-glow;
+  }
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    object-position: center 35%;
+  }
+
+  &__panel {
+    @include card-panel;
+    padding: 20px;
+    text-align: center;
+  }
+
+  &__heading {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: $color-white;
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    margin-top: 2px;
+    margin-bottom: 14px;
+  }
+
+  .countdown {
+    justify-content: center;
+  }
+}

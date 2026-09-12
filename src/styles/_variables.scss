@@ -1,0 +1,59 @@
+// ==========================================================================
+// Design tokens — BFOUNDATION.RW
+// ==========================================================================
+
+// Colors
+$color-bg: #0a0a0a;
+$color-bg-panel: #121212;
+$color-bg-panel-alt: #16130d;
+$color-border: #2a2620;
+$color-border-soft: rgba(240, 180, 60, 0.18);
+
+$color-gold: #f0a93a;
+$color-gold-bright: #f5b93f;
+$color-gold-dark: #b9791f;
+$color-green: #3ec95f;
+$color-red: #d13b3b;
+
+$color-white: #ffffff;
+$color-text: #e9e6df;
+$color-text-muted: #a8a49b;
+$color-text-faint: #78746c;
+
+// Typography
+$font-heading: 'Poppins', 'Segoe UI', sans-serif;
+$font-body: 'Inter', 'Segoe UI', sans-serif;
+
+// Spacing
+$container-max: 1280px;
+$gutter: 24px;
+
+// Radii
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
+
+// Shadows
+$shadow-gold-glow: 0 0 24px rgba(240, 169, 58, 0.15);
+
+// Breakpoints
+$bp-xl: 1200px;
+$bp-lg: 992px;
+$bp-md: 768px;
+$bp-sm: 560px;
+
+@mixin container {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 0 $gutter;
+}
+
+@mixin gold-border {
+  border: 1px solid $color-border-soft;
+}
+
+@mixin card-panel {
+  background: $color-bg-panel;
+  @include gold-border;
+  border-radius: $radius-md;
+}

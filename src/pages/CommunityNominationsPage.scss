@@ -1,0 +1,60 @@
+@use '../styles/variables' as *;
+
+.community-noms {
+  &__inner {
+    @include container;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  &__card {
+    @include card-panel;
+    padding: 26px;
+  }
+
+  &__category {
+    color: $color-gold;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    color: $color-white;
+    margin-bottom: 10px;
+  }
+
+  &__reason {
+    font-size: 0.85rem;
+    color: $color-text-muted;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid $color-border;
+    padding-top: 16px;
+  }
+
+  &__count {
+    font-size: 0.78rem;
+    color: $color-text-faint;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+@use '../../styles/variables' as *;
+
+.chart-card {
+  @include card-panel;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+
+    h3 {
+      font-size: 0.95rem;
+      color: $color-white;
+    }
+  }
+
+  &__sub {
+    font-size: 0.72rem;
+    color: $color-text-faint;
+  }
+
+  &__canvas {
+    position: relative;
+    height: 260px;
+    width: 100%;
+  }
+}

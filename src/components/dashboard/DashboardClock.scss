@@ -1,0 +1,41 @@
+@use '../../styles/variables' as *;
+
+.dash-clock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: $color-text-muted;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    svg {
+      color: $color-gold;
+    }
+
+    &--time {
+      font-variant-numeric: tabular-nums;
+      color: $color-text;
+      font-weight: 600;
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 14px;
+    background: $color-border;
+  }
+
+  @media (max-width: $bp-sm) {
+    &__item:not(&__item--time) {
+      display: none;
+    }
+
+    &__divider {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,120 @@
+@use '../styles/variables' as *;
+
+.hof-years {
+  display: inline-flex;
+  gap: 6px;
+  background: $color-bg-panel;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  padding: 4px;
+
+  button {
+    background: transparent;
+    border: none;
+    color: $color-text-muted;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 8px 20px;
+    border-radius: 999px;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      color: $color-text;
+    }
+
+    &.is-active {
+      background: $color-gold;
+      color: #1a1400;
+    }
+  }
+}
+
+.hof-page {
+  &__inner {
+    @include container;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+
+  &__card {
+    position: relative;
+    @include card-panel;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 26px 14px;
+
+    &--featured {
+      border-color: $color-gold;
+      box-shadow: $shadow-gold-glow;
+    }
+  }
+
+  &__crown {
+    position: absolute;
+    top: -10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: $color-gold;
+    color: #1a1400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-border-soft;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text-muted;
+    margin-bottom: 12px;
+  }
+
+  &__card--featured &__avatar {
+    border-color: $color-gold;
+    color: $color-gold-bright;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: $color-white;
+  }
+
+  &__category {
+    font-size: 0.75rem;
+    color: $color-gold;
+    margin-top: 4px;
+  }
+
+  &__year {
+    font-size: 0.68rem;
+    color: $color-text-faint;
+    margin-top: 4px;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}

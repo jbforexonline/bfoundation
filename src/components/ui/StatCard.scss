@@ -1,0 +1,40 @@
+@use '../../styles/variables' as *;
+
+.stat-card {
+  @include card-panel;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(240, 169, 58, 0.12);
+    color: $color-gold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-family: $font-heading;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: $color-white;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    color: $color-text-muted;
+    margin-top: 2px;
+  }
+
+  &__sub {
+    font-size: 0.7rem;
+    color: $color-text-faint;
+    margin-top: 4px;
+  }
+}

@@ -1,0 +1,140 @@
+@use '../styles/variables' as *;
+
+.contestants-page {
+  &__inner {
+    @include container;
+  }
+
+  &__controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: $color-bg-panel;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    padding: 9px 14px;
+    max-width: 260px;
+    flex: 1 1 220px;
+
+    svg {
+      color: $color-text-faint;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      color: $color-text;
+      font-size: 0.85rem;
+      width: 100%;
+
+      &::placeholder {
+        color: $color-text-faint;
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    button {
+      background: $color-bg-panel;
+      border: 1px solid $color-border;
+      color: $color-text-muted;
+      font-weight: 600;
+      font-size: 0.78rem;
+      padding: 7px 14px;
+      border-radius: 999px;
+
+      &.is-active {
+        background: $color-gold;
+        border-color: $color-gold;
+        color: #1a1400;
+      }
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    color: $color-text-faint;
+    padding: 40px 0;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+
+  &__card {
+    @include card-panel;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 14px;
+  }
+
+  &__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-border-soft;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text-muted;
+    margin-bottom: 10px;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: $color-white;
+  }
+
+  &__category {
+    font-size: 0.72rem;
+    color: $color-gold;
+    margin-top: 3px;
+  }
+
+  &__votes {
+    font-size: 0.7rem;
+    color: $color-text-faint;
+    margin: 3px 0 14px;
+  }
+
+  &__cta {
+    width: 100%;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}

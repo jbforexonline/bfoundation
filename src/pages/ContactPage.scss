@@ -1,0 +1,82 @@
+@use '../styles/variables' as *;
+
+.contact-page {
+  &__inner {
+    @include container;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  &__form-card {
+    @include card-panel;
+    padding: 32px;
+  }
+
+  &__textarea-wrap {
+    align-items: flex-start;
+
+    svg {
+      top: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      background: $color-bg-panel;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      padding: 11px 12px 11px 38px;
+      color: $color-text;
+      font-size: 0.88rem;
+      font-family: inherit;
+      resize: vertical;
+
+      &::placeholder {
+        color: $color-text-faint;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $color-gold;
+      }
+    }
+  }
+
+  &__aside {
+    @include card-panel;
+    padding: 28px;
+    background: $color-bg-panel-alt;
+
+    h3 {
+      color: $color-gold;
+      font-size: 1.05rem;
+      margin-bottom: 18px;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: $color-text-muted;
+
+      svg {
+        color: $color-gold;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    &__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+}

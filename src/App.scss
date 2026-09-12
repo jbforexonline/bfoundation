@@ -1,0 +1,8 @@
+@use './styles/variables' as *;
+@use './styles/base';
+
+.app {
+  background: $color-bg;
+  min-height: 100vh;
+  overflow-x: hidden;
+}

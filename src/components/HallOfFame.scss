@@ -1,0 +1,107 @@
+@use '../styles/variables' as *;
+
+.hall-of-fame {
+  @include card-panel;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    h3 {
+      color: $color-gold;
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+    }
+  }
+
+  &__badge {
+    font-size: 1.1rem;
+  }
+
+  &__podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  &__winner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__rank {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: $color-text-faint;
+
+    &--top {
+      margin-bottom: 4px;
+    }
+
+    &--bottom {
+      color: $color-gold;
+      margin-top: 4px;
+    }
+  }
+
+  &__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-border-soft;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text-muted;
+    font-size: 0.95rem;
+  }
+
+  &__winner--lg &__avatar {
+    width: 84px;
+    height: 84px;
+    border-color: $color-gold;
+    box-shadow: $shadow-gold-glow;
+    font-size: 1.1rem;
+    color: $color-gold-bright;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-white;
+    margin-top: 8px;
+  }
+
+  &__role {
+    font-size: 0.7rem;
+    color: $color-gold;
+    margin-top: 2px;
+  }
+
+  &__year {
+    font-size: 0.65rem;
+    color: $color-text-faint;
+    margin-top: 2px;
+  }
+
+  &__cta {
+    width: 100%;
+    justify-content: space-between;
+    padding: 12px 18px;
+  }
+}

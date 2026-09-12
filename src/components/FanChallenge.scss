@@ -1,0 +1,122 @@
+@use '../styles/variables' as *;
+
+.fan-challenge {
+  &__inner {
+    @include container;
+    display: grid;
+    grid-template-columns: 0.9fr 1.4fr 1fr;
+    gap: 24px;
+    align-items: center;
+    background: linear-gradient(120deg, #1a1006, #0a0a0a 60%);
+    border: 1px solid $color-border-soft;
+    border-radius: $radius-lg;
+    padding: 32px;
+  }
+
+  &__badge {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(160deg, $color-gold-bright, $color-gold-dark);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+
+  &__crown {
+    font-size: 1.8rem;
+  }
+
+  &__ribbon {
+    background: $color-red;
+    color: $color-white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 4px 14px;
+    border-radius: 999px;
+  }
+
+  &__matchup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  &__team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    flex: 1;
+
+    p {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: $color-white;
+      line-height: 1.3;
+    }
+  }
+
+  &__crest {
+    width: 72px;
+    height: 72px;
+    border-radius: $radius-sm;
+    background: $color-bg-panel;
+    border: 1px solid $color-border-soft;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: $color-gold;
+  }
+
+  &__vs {
+    font-family: $font-heading;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: $color-gold;
+  }
+
+  &__prize {
+    text-align: center;
+
+    &-label {
+      font-size: 0.8rem;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    &-value {
+      font-family: $font-heading;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: $color-gold;
+      margin: 6px 0;
+    }
+
+    &-note {
+      font-size: 0.8rem;
+      color: $color-text-faint;
+      margin-bottom: 16px;
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    &__inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+  }
+}

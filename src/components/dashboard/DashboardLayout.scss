@@ -1,0 +1,206 @@
+@use '../../styles/variables' as *;
+
+.dash {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: $color-bg;
+
+  &__sidebar {
+    border-right: 1px solid $color-border;
+    background: $color-bg-panel;
+    padding: 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+  }
+
+  &__brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, $color-gold-bright, $color-gold-dark);
+    color: #1a1400;
+    font-family: $font-heading;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__brand-name {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-white;
+    letter-spacing: 0.02em;
+  }
+
+  &__nav {
+    flex: 1;
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: $radius-sm;
+      color: $color-text-muted;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease;
+
+      svg {
+        flex-shrink: 0;
+        color: $color-text-faint;
+      }
+
+      &:hover {
+        background: rgba(240, 169, 58, 0.08);
+        color: $color-text;
+      }
+
+      &.is-active {
+        background: rgba(240, 169, 58, 0.14);
+        color: $color-gold;
+
+        svg {
+          color: $color-gold;
+        }
+      }
+    }
+  }
+
+  &__signout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    color: $color-text-muted;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 12px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      border-color: #e26060;
+      color: #e26060;
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 32px;
+    border-bottom: 1px solid $color-border;
+    background: $color-bg-panel;
+  }
+
+  &__profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__profile-text {
+    text-align: right;
+  }
+
+  &__profile-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-white;
+  }
+
+  &__profile-role {
+    display: inline-block;
+    margin-top: 2px;
+    background: rgba(240, 169, 58, 0.14);
+    color: $color-gold;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+
+  &__profile-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-gold;
+    color: $color-gold-bright;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    padding: 32px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+
+    &__sidebar {
+      border-right: none;
+      border-bottom: 1px solid $color-border;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+    }
+
+    &__nav ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    &__topbar {
+      padding: 14px 20px;
+      flex-wrap: wrap;
+    }
+
+    &__content {
+      padding: 20px;
+    }
+  }
+
+  @media (max-width: $bp-sm) {
+    &__profile-text {
+      display: none;
+    }
+  }
+}
