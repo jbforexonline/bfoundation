@@ -14,9 +14,10 @@ function initialsOf(name) {
 
 /**
  * Self-contained dashboard shell — no site Header/Footer.
- * navItems: [{ label, to, icon }]
+ * navGroups: [{ label?, items: [{ label, to, icon, end? }] }]
+ * A group without a label renders as a plain flat list (used by Fan/Admin).
  */
-export default function DashboardLayout({ navItems, roleLabel, userName = 'Guest', children }) {
+export default function DashboardLayout({ navGroups, roleLabel, userName = 'Guest', children }) {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
@@ -33,16 +34,21 @@ export default function DashboardLayout({ navItems, roleLabel, userName = 'Guest
         </div>
 
         <nav className="dash__nav" aria-label={`${roleLabel} dashboard`}>
-          <ul>
-            {navItems.map(({ label, to, icon: Icon, end }) => (
-              <li key={label}>
-                <NavLink to={to} end={end} className={({ isActive }) => (isActive ? 'is-active' : '')}>
-                  <Icon size={17} />
-                  {label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+          {navGroups.map((group, gi) => (
+            <div className="dash__nav-group" key={group.label ?? gi}>
+              {group.label && <p className="dash__nav-group-label">{group.label}</p>}
+              <ul>
+                {group.items.map(({ label, to, icon: Icon, end }) => (
+                  <li key={label}>
+                    <NavLink to={to} end={end} className={({ isActive }) => (isActive ? 'is-active' : '')}>
+                      <Icon size={16} />
+                      {label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
 
         <button type="button" className="dash__signout" onClick={handleSignOut}>

@@ -1,0 +1,113 @@
+@use '../../styles/variables' as *;
+
+.voting-page {
+  &__grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  &__preview {
+    @include card-panel;
+    padding: 28px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+
+  &__preview-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-gold;
+    color: $color-gold-bright;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+
+  &__preview-name {
+    font-weight: 700;
+    color: $color-white;
+  }
+
+  &__preview-category {
+    font-size: 0.78rem;
+    color: $color-gold;
+  }
+
+  &__preview-votes {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    margin-bottom: 12px;
+  }
+
+  &__preview-note {
+    font-size: 0.68rem;
+    color: $color-text-faint;
+    margin-top: 10px;
+  }
+
+  &__share {
+    @include card-panel;
+    padding: 24px;
+  }
+
+  &__link-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+
+    input {
+      flex: 1;
+      background: $color-bg;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      padding: 10px 14px;
+      color: $color-text-muted;
+      font-size: 0.82rem;
+    }
+  }
+
+  &__external {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: $color-gold;
+    margin-bottom: 22px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__qr {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 18px;
+    border-top: 1px solid $color-border;
+    color: $color-gold;
+
+    p {
+      font-size: 0.78rem;
+      color: $color-text-muted;
+      max-width: 40ch;
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

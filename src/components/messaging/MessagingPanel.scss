@@ -1,0 +1,214 @@
+@use '../../styles/variables' as *;
+
+.messaging {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 560px;
+  @include card-panel;
+  overflow: hidden;
+
+  &__list {
+    border-right: 1px solid $color-border;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $color-border;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(240, 169, 58, 0.06);
+    }
+
+    &.is-active {
+      background: rgba(240, 169, 58, 0.12);
+    }
+  }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #3a3226, #1c1912);
+    border: 2px solid $color-border-soft;
+    color: $color-gold-bright;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+
+  &__item-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__item-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $color-white;
+  }
+
+  &__item-preview {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+
+  &__badge {
+    background: $color-gold;
+    color: #1a1400;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 5px;
+  }
+
+  &__thread {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__thread-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__thread-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: $color-white;
+  }
+
+  &__thread-subtitle {
+    font-size: 0.72rem;
+    color: $color-text-faint;
+    margin-top: 2px;
+  }
+
+  &__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+
+    span {
+      display: block;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    &--them {
+      align-self: flex-start;
+      background: $color-bg-panel-alt;
+      border: 1px solid $color-border;
+      color: $color-text;
+    }
+
+    &--me {
+      align-self: flex-end;
+      background: $color-gold;
+      color: #1a1400;
+
+      span {
+        color: rgba(26, 20, 0, 0.6);
+      }
+    }
+  }
+
+  &__composer {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    border-top: 1px solid $color-border;
+
+    input {
+      flex: 1;
+      background: $color-bg;
+      border: 1px solid $color-border;
+      border-radius: 999px;
+      padding: 10px 16px;
+      color: $color-text;
+      font-size: 0.85rem;
+
+      &::placeholder {
+        color: $color-text-faint;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: $color-gold;
+      }
+    }
+
+    button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: $color-gold;
+      color: #1a1400;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      &:hover {
+        filter: brightness(1.08);
+      }
+    }
+  }
+
+  @media (max-width: $bp-lg) {
+    grid-template-columns: 1fr;
+    height: auto;
+
+    &__list {
+      border-right: none;
+      border-bottom: 1px solid $color-border;
+      max-height: 220px;
+    }
+
+    &__messages {
+      max-height: 320px;
+    }
+  }
+}

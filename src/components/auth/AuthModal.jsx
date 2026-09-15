@@ -23,7 +23,7 @@ const TITLES = {
 
 const DASHBOARD_PATHS = {
   fan: '/dashboard/fan/profile',
-  contestant: '/dashboard/contestant/profile',
+  contestant: '/dashboard/contestant/public-profile',
   admin: '/dashboard/admin/contestants',
 };
 

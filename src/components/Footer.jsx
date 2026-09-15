@@ -16,7 +16,7 @@ const RESOURCES = [
   { label: 'How to Vote', to: '/how-to-vote' },
   { label: 'Community Nominations', to: '/community-nominations' },
   { label: 'Fan Dashboard (demo)', to: '/dashboard/fan/profile' },
-  { label: 'Contestant Dashboard (demo)', to: '/dashboard/contestant/profile' },
+  { label: 'Contestant Dashboard (demo)', to: '/dashboard/contestant/public-profile' },
   { label: 'Admin Dashboard (demo)', to: '/dashboard/admin/contestants' },
   { label: 'Terms & Conditions', to: '/#terms' },
   { label: 'Privacy Policy', to: '/#privacy' },

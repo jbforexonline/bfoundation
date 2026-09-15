@@ -3,14 +3,14 @@ import { User, Award, Link2, FileText, Instagram, Vote, Trophy, TrendingUp } fro
 import StatCard from '../../components/ui/StatCard';
 import '../../components/dashboard/DashboardPage.scss';
 import '../../components/auth/AuthForm.scss';
-import './ContestantProfileManagementPage.scss';
+import './ContestantPublicProfilePage.scss';
 
 const CATEGORIES = [
   'Best TikToker', 'Best YouTuber', 'Best Musician', 'Best Comedian', 'Best Journalist',
   'Best Influencer', 'Best Footballer', 'Best Dancer', 'Best DJ', 'Best Actor', 'Entrepreneur',
 ];
 
-export default function ContestantProfileManagementPage() {
+export default function ContestantPublicProfilePage() {
   const [form, setForm] = useState({
     fullName: 'Malaika Uwase',
     category: 'Best Musician',
@@ -34,7 +34,7 @@ export default function ContestantProfileManagementPage() {
     <div className="dash-page">
       <div className="dash-page__header">
         <div>
-          <h1 className="dash-page__title">Profile Management</h1>
+          <h1 className="dash-page__title">Public Profile</h1>
           <p className="dash-page__subtitle">This is what fans see on your public contestant profile.</p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export default function ContestantProfileManagementPage() {
       </div>
 
       <div>
-        <h2 className="dash-page__section-title">Public profile</h2>
+        <h2 className="dash-page__section-title">Profile details</h2>
 
         {saved && (
           <p className="auth-form__success" role="status">

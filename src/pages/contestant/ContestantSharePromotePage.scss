@@ -1,0 +1,50 @@
+@use '../../styles/variables' as *;
+
+.share-promote {
+  &__panel {
+    @include card-panel;
+    padding: 24px;
+  }
+
+  &__link-row {
+    display: flex;
+    gap: 10px;
+
+    input {
+      flex: 1;
+      background: $color-bg;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      padding: 10px 14px;
+      color: $color-text-muted;
+      font-size: 0.82rem;
+    }
+  }
+
+  &__channels {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__channel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+    padding: 14px;
+    background: $color-bg;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    color: $color-text-muted;
+    font-size: 0.82rem;
+    font-weight: 600;
+
+    &:hover {
+      border-color: $color-gold;
+      color: $color-gold;
+    }
+  }
+}

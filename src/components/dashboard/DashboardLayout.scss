@@ -13,6 +13,10 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
   }
 
   &__brand {
@@ -46,21 +50,39 @@
 
   &__nav {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
 
+  &__nav-group {
     ul {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
+  }
 
+  &__nav-group-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $color-text-faint;
+    padding: 0 12px;
+    margin-bottom: 6px;
+  }
+
+  &__nav {
     a {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border-radius: $radius-sm;
       color: $color-text-muted;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       font-weight: 600;
       transition: background 0.15s ease, color 0.15s ease;
 
@@ -181,9 +203,18 @@
       align-items: center;
       flex-wrap: wrap;
       padding: 14px 16px;
+      position: static;
+      height: auto;
+      overflow-y: visible;
     }
 
-    &__nav ul {
+    &__nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      overflow-y: visible;
+    }
+
+    &__nav-group ul {
       flex-direction: row;
       flex-wrap: wrap;
     }

@@ -13,13 +13,20 @@ import EventsPage from './pages/EventsPage';
 import ApplicationPage from './pages/ApplicationPage';
 import AboutPage from './pages/AboutPage';
 import CommunityNominationsPage from './pages/CommunityNominationsPage';
+
+// Fan Dashboard
 import FanLayout from './pages/fan/FanLayout';
 import FanProfilePage from './pages/fan/FanProfilePage';
+import FanContestantsPage from './pages/fan/FanContestantsPage';
+import FanMessagesPage from './pages/fan/FanMessagesPage';
 import FanVoteHistoryPage from './pages/fan/FanVoteHistoryPage';
 import FanPurchasedVotesPage from './pages/fan/FanPurchasedVotesPage';
 import FanFavoritesPage from './pages/fan/FanFavoritesPage';
 import FanNotificationsPage from './pages/fan/FanNotificationsPage';
 import FanEventTicketsPage from './pages/fan/FanEventTicketsPage';
+import FanVoteCheckoutPage from './pages/fan/FanVoteCheckoutPage';
+
+// Admin Dashboard
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminContestantsPage from './pages/admin/AdminContestantsPage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
@@ -29,15 +36,27 @@ import AdminEventsPage from './pages/admin/AdminEventsPage';
 import AdminSponsorsPage from './pages/admin/AdminSponsorsPage';
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
+
+// Contestant Dashboard
 import ContestantLayout from './pages/contestant/ContestantLayout';
-import ContestantProfileManagementPage from './pages/contestant/ContestantProfileManagementPage';
-import ContestantAnalyticsPage from './pages/contestant/ContestantAnalyticsPage';
-import ContestantCampaignContentPage from './pages/contestant/ContestantCampaignContentPage';
-import ContestantSupporterInsightsPage from './pages/contestant/ContestantSupporterInsightsPage';
+import ContestantPublicProfilePage from './pages/contestant/ContestantPublicProfilePage';
+import ContestantMediaGalleryPage from './pages/contestant/ContestantMediaGalleryPage';
+import ContestantVotingPagePage from './pages/contestant/ContestantVotingPagePage';
+import ContestantVoteOverviewPage from './pages/contestant/ContestantVoteOverviewPage';
+import ContestantVoteGrowthPage from './pages/contestant/ContestantVoteGrowthPage';
+import ContestantRankingPage from './pages/contestant/ContestantRankingPage';
+import ContestantPerformancePage from './pages/contestant/ContestantPerformancePage';
+import ContestantPostsPage from './pages/contestant/ContestantPostsPage';
+import ContestantPromotionalMaterialsPage from './pages/contestant/ContestantPromotionalMaterialsPage';
+import ContestantSharePromotePage from './pages/contestant/ContestantSharePromotePage';
+import ContestantSupportersPage from './pages/contestant/ContestantSupportersPage';
+import ContestantDemographicsPage from './pages/contestant/ContestantDemographicsPage';
+import ContestantEngagementPage from './pages/contestant/ContestantEngagementPage';
 import ContestantNotificationsPage from './pages/contestant/ContestantNotificationsPage';
+import ContestantMessagesPage from './pages/contestant/ContestantMessagesPage';
 
 // Public pages render inside <App /> (shared Header/Footer/auth modal via <Outlet />).
-// The Fan Dashboard below is a separate top-level route with its own self-contained shell.
+// Each dashboard below is a separate top-level route tree with its own self-contained shell.
 const routes = [
   {
     path: '/',
@@ -61,14 +80,16 @@ const routes = [
     ],
   },
 
-  // Fan Dashboard — deliberately NOT nested under <App />, so it renders
-  // its own self-contained shell instead of the public Header/Footer.
+  // Fan Dashboard
   {
     path: '/dashboard/fan',
     element: <FanLayout />,
     children: [
       { index: true, element: <Navigate to="profile" replace /> },
       { path: 'profile', element: <FanProfilePage /> },
+      { path: 'contestants', element: <FanContestantsPage /> },
+      { path: 'messages', element: <FanMessagesPage /> },
+      { path: 'vote', element: <FanVoteCheckoutPage /> },
       { path: 'vote-history', element: <FanVoteHistoryPage /> },
       { path: 'purchased-votes', element: <FanPurchasedVotesPage /> },
       { path: 'favorites', element: <FanFavoritesPage /> },
@@ -77,7 +98,7 @@ const routes = [
     ],
   },
 
-  // Admin Dashboard — same self-contained shell, no site Header/Footer.
+  // Admin Dashboard
   {
     path: '/dashboard/admin',
     element: <AdminLayout />,
@@ -94,17 +115,27 @@ const routes = [
     ],
   },
 
-  // Contestant Dashboard — same self-contained shell, no site Header/Footer.
+  // Contestant Dashboard
   {
     path: '/dashboard/contestant',
     element: <ContestantLayout />,
     children: [
-      { index: true, element: <Navigate to="profile" replace /> },
-      { path: 'profile', element: <ContestantProfileManagementPage /> },
-      { path: 'analytics', element: <ContestantAnalyticsPage /> },
-      { path: 'campaign', element: <ContestantCampaignContentPage /> },
-      { path: 'supporters', element: <ContestantSupporterInsightsPage /> },
+      { index: true, element: <Navigate to="public-profile" replace /> },
+      { path: 'public-profile', element: <ContestantPublicProfilePage /> },
+      { path: 'media-gallery', element: <ContestantMediaGalleryPage /> },
+      { path: 'voting-page', element: <ContestantVotingPagePage /> },
+      { path: 'vote-overview', element: <ContestantVoteOverviewPage /> },
+      { path: 'vote-growth', element: <ContestantVoteGrowthPage /> },
+      { path: 'ranking', element: <ContestantRankingPage /> },
+      { path: 'performance', element: <ContestantPerformancePage /> },
+      { path: 'posts', element: <ContestantPostsPage /> },
+      { path: 'promotional-materials', element: <ContestantPromotionalMaterialsPage /> },
+      { path: 'share-promote', element: <ContestantSharePromotePage /> },
+      { path: 'supporters', element: <ContestantSupportersPage /> },
+      { path: 'demographics', element: <ContestantDemographicsPage /> },
+      { path: 'engagement', element: <ContestantEngagementPage /> },
       { path: 'notifications', element: <ContestantNotificationsPage /> },
+      { path: 'messages', element: <ContestantMessagesPage /> },
     ],
   },
 ];

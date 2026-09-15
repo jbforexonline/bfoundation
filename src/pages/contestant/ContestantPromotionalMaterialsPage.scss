@@ -1,0 +1,54 @@
+@use '../../styles/variables' as *;
+
+.promo-materials {
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  &__card {
+    @include card-panel;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+
+    .btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+  }
+
+  &__preview {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: $radius-sm;
+    background: linear-gradient(160deg, #2a2620, #16130d);
+    border: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-gold;
+    margin-bottom: 10px;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-white;
+  }
+
+  &__type {
+    font-size: 0.72rem;
+    color: $color-text-faint;
+  }
+
+  @media (max-width: $bp-lg) {
+    &__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}

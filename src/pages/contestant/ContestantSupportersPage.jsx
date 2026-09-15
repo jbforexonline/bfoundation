@@ -13,12 +13,12 @@ const SUPPORTERS = [
   { id: 6, name: 'Samuel Bizimana', votes: 60, lastActive: '1 week ago', tier: 'New' },
 ];
 
-export default function ContestantSupporterInsightsPage() {
+export default function ContestantSupportersPage() {
   return (
     <div className="dash-page">
       <div className="dash-page__header">
         <div>
-          <h1 className="dash-page__title">Supporter Insights</h1>
+          <h1 className="dash-page__title">Supporters</h1>
           <p className="dash-page__subtitle">Who's voting for you, and how often they come back.</p>
         </div>
       </div>

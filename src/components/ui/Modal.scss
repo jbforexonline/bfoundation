@@ -1,0 +1,58 @@
+@use '../../styles/variables' as *;
+
+.ui-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 300;
+
+  &__card {
+    width: 100%;
+    max-width: 460px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: $color-bg-panel;
+    border: 1px solid $color-border-soft;
+    border-radius: $radius-lg;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid $color-border;
+
+    h3 {
+      font-size: 1.05rem;
+      color: $color-white;
+    }
+  }
+
+  &__close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: transparent;
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: $color-gold;
+      border-color: $color-gold;
+    }
+  }
+
+  &__body {
+    padding: 22px;
+  }
+}

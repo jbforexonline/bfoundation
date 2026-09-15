@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Megaphone, FileText, Send } from 'lucide-react';
 import '../../components/dashboard/DashboardPage.scss';
 import '../../components/auth/AuthForm.scss';
-import './ContestantCampaignContentPage.scss';
+import './ContestantPostsPage.scss';
 
 const INITIAL_POSTS = [
   {
@@ -19,7 +19,7 @@ const INITIAL_POSTS = [
   },
 ];
 
-export default function ContestantCampaignContentPage() {
+export default function ContestantPostsPage() {
   const [posts, setPosts] = useState(INITIAL_POSTS);
   const [form, setForm] = useState({ title: '', body: '' });
 
@@ -43,7 +43,7 @@ export default function ContestantCampaignContentPage() {
     <div className="dash-page">
       <div className="dash-page__header">
         <div>
-          <h1 className="dash-page__title">Campaign Content</h1>
+          <h1 className="dash-page__title">Posts</h1>
           <p className="dash-page__subtitle">Post updates your supporters see on your public profile.</p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function ContestantCampaignContentPage() {
 
           <div className="auth-form__field">
             <label htmlFor="post-body">Message</label>
-            <div className="auth-form__input-wrap campaign-content__textarea-wrap">
+            <div className="auth-form__input-wrap posts-page__textarea-wrap">
               <FileText size={16} />
               <textarea
                 id="post-body"
