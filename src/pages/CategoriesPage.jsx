@@ -1,7 +1,9 @@
 import {
   Music2, PlaySquare, Music, Smile, PenLine, Star,
-  CircleDot, PersonStanding, Headphones, Video, Briefcase,
+  CircleDot, PersonStanding, Headphones, Video, Briefcase, Award,
 } from 'lucide-react';
+import useApi from '../hooks/useApi';
+import { formatRwf } from '../api/client';
 import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import './CategoriesPage.scss';
@@ -20,7 +22,25 @@ const CATEGORIES = [
   { icon: Briefcase, label: 'Entrepreneur', desc: 'Founders building businesses that build Rwanda.', contestants: 73 },
 ];
 
+const shortPrize = (n) => (n >= 1_000_000 ? `${n / 1_000_000} million RWF` : formatRwf(n));
+
 export default function CategoriesPage() {
+  // Live categories from the API; icons/descriptions above are used as defaults by name.
+  const { data } = useApi('/categories');
+  const cards = data?.categories?.length
+    ? data.categories.map((c) => {
+        const preset = CATEGORIES.find((p) => p.label === c.name);
+        return {
+          icon: preset?.icon ?? Award,
+          label: c.name,
+          slug: c.slug,
+          desc: c.description ?? preset?.desc ?? '',
+          contestants: c.contestantCount,
+          prize: shortPrize(c.prizeAmount),
+        };
+      })
+    : CATEGORIES.map((c) => ({ ...c, prize: '3 million RWF' }));
+
   return (
     <>
       <PageHero
@@ -32,7 +52,7 @@ export default function CategoriesPage() {
       <section className="categories-page section">
         <div className="categories-page__inner">
           <div className="categories-page__grid">
-            {CATEGORIES.map(({ icon: Icon, label, desc, contestants }) => (
+            {cards.map(({ icon: Icon, label, slug, desc, contestants, prize }) => (
               <div className="categories-page__card" key={label}>
                 <div className="categories-page__icon">
                   <Icon size={24} />
@@ -41,9 +61,9 @@ export default function CategoriesPage() {
                 <p>{desc}</p>
                 <div className="categories-page__meta">
                   <span>{contestants} contestants</span>
-                  <span className="categories-page__prize">3 million RWF</span>
+                  <span className="categories-page__prize">{prize}</span>
                 </div>
-                <Link to="/contestants" className="btn btn--outline categories-page__cta">
+                <Link to={slug ? `/contestants?category=${slug}` : '/contestants'} className="btn btn--outline categories-page__cta">
                   View Contestants
                 </Link>
               </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Chrome, Facebook, User, Star, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../../auth/AuthContext';
+import Notice from '../ui/Notice';
 import './AuthForm.scss';
 
 const ROLES = [
@@ -14,6 +16,9 @@ export default function Login({ onSwitchMode, onForgotPassword, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const roleLabel = ROLES.find((r) => r.key === role)?.label ?? 'Fan';
 
@@ -30,16 +35,23 @@ export default function Login({ onSwitchMode, onForgotPassword, onClose }) {
     return next;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const next = validate();
     setErrors(next);
-    if (Object.keys(next).length === 0) {
-      // TODO: wire up to your real authentication endpoint — verify credentials
-      // AND that this account actually holds the selected role before redirecting.
-      console.log('Log in with', { ...form, role });
+    setApiError('');
+    if (Object.keys(next).length > 0) return;
+    setLoading(true);
+    try {
+      // The backend checks the password AND that the account holds the selected role.
+      const user = await login({ email: form.email.trim(), password: form.password, role, remember: form.remember });
       setSubmitted(true);
-      setTimeout(() => onClose?.(role), 1200);
+      setTimeout(() => onClose?.(user), 700);
+    } catch (err) {
+      setErrors(err.fieldErrors ?? {});
+      setApiError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,6 +83,8 @@ export default function Login({ onSwitchMode, onForgotPassword, onClose }) {
           Welcome back! Taking you to the {roleLabel} Dashboard&hellip;
         </p>
       )}
+
+      <Notice tone="error">{apiError}</Notice>
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <div className="auth-form__field">
@@ -123,8 +137,8 @@ export default function Login({ onSwitchMode, onForgotPassword, onClose }) {
           </button>
         </div>
 
-        <button type="submit" className="btn btn--gold auth-form__submit">
-          Log In as {roleLabel}
+        <button type="submit" className="btn btn--gold auth-form__submit" disabled={loading}>
+          {loading ? 'Logging in…' : `Log In as ${roleLabel}`}
         </button>
 
         <div className="auth-form__divider">or continue with</div>

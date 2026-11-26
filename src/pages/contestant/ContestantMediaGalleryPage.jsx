@@ -1,76 +1,85 @@
 import { useRef, useState } from 'react';
 import { ImagePlus, Star, Trash2 } from 'lucide-react';
+import Notice from '../../components/ui/Notice';
+import useApi from '../../hooks/useApi';
+import { api, formatDate } from '../../api/client';
 import '../../components/dashboard/DashboardPage.scss';
 import './ContestantMediaGalleryPage.scss';
 
-const INITIAL_GALLERY = [
-  { id: 1, src: null, label: 'Cover photo', isCover: true },
-  { id: 2, src: null, label: 'Performance, Aug 2026' },
-  { id: 3, src: null, label: 'Studio session' },
-];
-
+// Photos are uploaded to the backend (JPG / PNG / WEBP, max 5 MB, up to 20). The cover photo is the profile picture.
 export default function ContestantMediaGalleryPage() {
-  const [gallery, setGallery] = useState(INITIAL_GALLERY);
+  const { data, error, loading, reload } = useApi('/contestants/me/media');
+  const [notice, setNotice] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const gallery = data?.media ?? [];
 
-  const handleFiles = (e) => {
+  const handleFiles = async (e) => {
     const files = Array.from(e.target.files ?? []);
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // TODO: upload the file to your real media storage instead of keeping it in memory.
-        setGallery((prev) => [
-          ...prev,
-          { id: Date.now() + Math.random(), src: reader.result, label: file.name, isCover: false },
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
     e.target.value = '';
+    if (!files.length) return;
+    setNotice(null);
+    setUploading(true);
+    let ok = 0;
+    for (const file of files) {
+      const form = new FormData();
+      form.append('image', file);
+      try {
+        await api('/contestants/me/media', { method: 'POST', form });
+        ok++;
+      } catch (err) {
+        setNotice({ tone: 'error', text: `${file.name}: ${err.message}` });
+      }
+    }
+    setUploading(false);
+    if (ok) {
+      if (ok === files.length) setNotice({ tone: 'success', text: `${ok} photo${ok === 1 ? '' : 's'} uploaded.` });
+      reload();
+    }
   };
 
-  const setCover = (id) =>
-    setGallery((prev) => prev.map((img) => ({ ...img, isCover: img.id === id })));
-
-  const remove = (id) => setGallery((prev) => prev.filter((img) => img.id !== id));
+  const act = async (fn) => {
+    setNotice(null);
+    try {
+      await fn();
+      reload();
+    } catch (err) {
+      setNotice({ tone: 'error', text: err.message });
+    }
+  };
+  const setCover = (id) => act(() => api(`/contestants/me/media/${id}/cover`, { method: 'PATCH' }));
+  const remove = (id) => act(() => api(`/contestants/me/media/${id}`, { method: 'DELETE' }));
 
   return (
     <div className="dash-page">
       <div className="dash-page__header">
         <div>
           <h1 className="dash-page__title">Media Gallery</h1>
-          <p className="dash-page__subtitle">Add photos to your public profile — fans see these when they view you.</p>
+          <p className="dash-page__subtitle">Add photos to your public profile — fans see these when they view you. JPG, PNG or WEBP up to 5 MB.</p>
         </div>
-        <button type="button" className="btn btn--gold" onClick={() => fileInputRef.current?.click()}>
+        <button type="button" className="btn btn--gold" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
           <ImagePlus size={16} />
-          Add Photo
+          {uploading ? 'Uploading…' : 'Add Photo'}
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={handleFiles}
-        />
+        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={handleFiles} />
       </div>
+
+      <Notice tone={notice?.tone}>{notice?.text}</Notice>
+      <Notice tone="error">{error?.message}</Notice>
+      {!loading && gallery.length === 0 && <Notice tone="info">No photos yet. Your first photo becomes your profile picture.</Notice>}
 
       <div className="media-gallery__grid">
         {gallery.map((img) => (
           <div className="media-gallery__item" key={img.id}>
             <div className="media-gallery__thumb">
-              {img.src ? (
-                <img src={img.src} alt={img.label} />
-              ) : (
-                <span className="media-gallery__placeholder" aria-hidden="true" />
-              )}
+              <img src={img.url} alt="Gallery" />
               {img.isCover && (
                 <span className="media-gallery__cover-badge">
                   <Star size={11} fill="currentColor" /> Cover
                 </span>
               )}
             </div>
-            <p className="media-gallery__label">{img.label}</p>
+            <p className="media-gallery__label">Added {formatDate(img.createdAt)}</p>
             <div className="media-gallery__actions">
               {!img.isCover && (
                 <button type="button" onClick={() => setCover(img.id)}>

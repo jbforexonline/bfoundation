@@ -1,89 +1,95 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, ThumbsUp } from 'lucide-react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import PageHero from '../components/PageHero';
+import Notice from '../components/ui/Notice';
+import useApi from '../hooks/useApi';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import './VotePage.scss';
-
-const CATEGORIES = [
-  {
-    id: 'musician',
-    label: 'Best Musician',
-    nominees: [
-      { id: 'm1', name: 'Malaika Uwase', votes: 18420 },
-      { id: 'm2', name: 'Bruce Karenzi', votes: 15310 },
-      { id: 'm3', name: 'Diane Iradukunda', votes: 12980 },
-      { id: 'm4', name: 'Samuel Bizimana', votes: 9860 },
-    ],
-  },
-  {
-    id: 'footballer',
-    label: 'Best Footballer',
-    nominees: [
-      { id: 'f1', name: 'Ishimwe Kevin', votes: 21040 },
-      { id: 'f2', name: 'Emmanuel Ndayisenga', votes: 17760 },
-      { id: 'f3', name: 'David Habyarimana', votes: 14210 },
-    ],
-  },
-  {
-    id: 'influencer',
-    label: 'Best Influencer',
-    nominees: [
-      { id: 'i1', name: 'Grace Umutoni', votes: 13500 },
-      { id: 'i2', name: 'Claudine Mukamana', votes: 11890 },
-      { id: 'i3', name: 'Aline Mutesi', votes: 10420 },
-    ],
-  },
-  {
-    id: 'comedian',
-    label: 'Best Comedian',
-    nominees: [
-      { id: 'c1', name: 'Divine Ingabire', votes: 9640 },
-      { id: 'c2', name: 'Sandrine Uwera', votes: 8120 },
-      { id: 'c3', name: 'Patrick Habimana', votes: 7530 },
-    ],
-  },
-];
 
 function initials(name) {
   return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 }
 
+// Free vote: one per category per person (fan account with a verified email).
 export default function VotePage() {
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
-  const [ballot, setBallot] = useState({}); // { [categoryId]: nomineeId }
-  const [voteCounts, setVoteCounts] = useState(() =>
-    Object.fromEntries(
-      CATEGORIES.flatMap((cat) => cat.nominees.map((n) => [n.id, n.votes]))
-    )
-  );
+  const { user } = useAuth();
+  const { openAuth } = useOutletContext() ?? {};
+  const [params] = useSearchParams();
+  const { data: catData } = useApi('/categories');
+  const categories = (catData?.categories ?? []).filter((c) => c.contestantCount > 0);
+  const [activeCategory, setActiveCategory] = useState(params.get('category'));
+  const active = categories.find((c) => c.slug === activeCategory) ?? categories[0];
+  const { data, loading } = useApi(active ? '/contestants' : null, { category: active?.slug, limit: 100, sort: 'name' });
+  const [ballot, setBallot] = useState({}); // { [categorySlug]: contestantId }
+  const [notice, setNotice] = useState(null);
+  const [sending, setSending] = useState(null);
 
-  const category = CATEGORIES.find((c) => c.id === activeCategory);
-  const votedFor = ballot[activeCategory];
+  // Which categories this fan already used their free vote in.
+  useEffect(() => {
+    if (user?.role !== 'FAN') return;
+    api('/votes/free-status')
+      .then((d) =>
+        setBallot(Object.fromEntries(d.categories.filter((c) => c.votedFor).map((c) => [c.category.slug, c.votedFor.id])))
+      )
+      .catch(() => {});
+  }, [user]);
 
-  const castVote = (nomineeId) => {
-    if (votedFor) return; // one vote per category in this demo
-    setBallot((prev) => ({ ...prev, [activeCategory]: nomineeId }));
-    setVoteCounts((prev) => ({ ...prev, [nomineeId]: prev[nomineeId] + 1 }));
-    // TODO: send the vote to your backend here.
+  const votedFor = active ? ballot[active.slug] : null;
+
+  const castVote = async (contestant) => {
+    setNotice(null);
+    if (!user) {
+      setNotice({ tone: 'info', text: 'Log in with your fan account to vote.' });
+      openAuth?.('login');
+      return;
+    }
+    if (user.role !== 'FAN') {
+      setNotice({ tone: 'info', text: 'Only fan accounts can vote.' });
+      return;
+    }
+    setSending(contestant.id);
+    try {
+      await api('/votes/free', { method: 'POST', body: { contestantId: contestant.id } });
+      setBallot((prev) => ({ ...prev, [active.slug]: contestant.id }));
+      setNotice({ tone: 'success', text: `Your vote for ${contestant.name} in ${active.name} has been recorded. Thank you!` });
+    } catch (err) {
+      setNotice({
+        tone: 'error',
+        text:
+          err.code === 'EMAIL_NOT_VERIFIED'
+            ? 'Please verify your email address first (check your inbox for the link we sent when you signed up).'
+            : err.message,
+      });
+    } finally {
+      setSending(null);
+    }
   };
+
+  const contestants = data?.contestants ?? [];
 
   return (
     <>
       <PageHero
         eyebrow="Vote"
         title="Cast your vote"
-        description="Pick a category and support the nominee you believe deserves it. One vote per category, per person."
+        description="Pick a category and support the nominee you believe deserves it. One free vote per category, per person."
       >
         <div className="vote-tabs" role="tablist" aria-label="Award category">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               type="button"
               role="tab"
-              aria-selected={cat.id === activeCategory}
-              className={cat.id === activeCategory ? 'is-active' : ''}
-              onClick={() => setActiveCategory(cat.id)}
+              aria-selected={cat.id === active?.id}
+              className={cat.id === active?.id ? 'is-active' : ''}
+              onClick={() => {
+                setActiveCategory(cat.slug);
+                setNotice(null);
+              }}
             >
-              {cat.label}
+              {cat.name}
             </button>
           ))}
         </div>
@@ -91,30 +97,37 @@ export default function VotePage() {
 
       <section className="vote-page section">
         <div className="vote-page__inner">
-          {votedFor && (
+          <Notice tone={notice?.tone}>{notice?.text}</Notice>
+          {votedFor && !notice && (
             <p className="vote-page__confirm" role="status">
-              <Check size={16} /> Your vote for {category.label} has been recorded. Thank you!
+              <Check size={16} /> You already used your free vote in {active.name}. Thank you!
             </p>
           )}
+          {!active && catData && <Notice tone="info">No contestants are open for votes yet.</Notice>}
+          {active && loading && <p className="vote-page__votes">Loading contestants…</p>}
 
           <div className="vote-page__grid">
-            {category.nominees.map((nominee) => {
+            {contestants.map((nominee) => {
               const isVoted = votedFor === nominee.id;
-              const isDisabled = Boolean(votedFor) && !isVoted;
+              const isDisabled = (Boolean(votedFor) && !isVoted) || sending === nominee.id;
 
               return (
-                <div
-                  className={`vote-page__card ${isVoted ? 'vote-page__card--voted' : ''}`}
-                  key={nominee.id}
-                >
-                  <div className="vote-page__avatar">{initials(nominee.name)}</div>
+                <div className={`vote-page__card ${isVoted ? 'vote-page__card--voted' : ''}`} key={nominee.id}>
+                  <div className="vote-page__avatar" style={nominee.profileImage ? { padding: 0, overflow: 'hidden' } : undefined}>
+                    {nominee.profileImage ? (
+                      <img src={nominee.profileImage} alt={nominee.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      initials(nominee.name)
+                    )}
+                  </div>
                   <p className="vote-page__name">{nominee.name}</p>
-                  <p className="vote-page__votes">{voteCounts[nominee.id].toLocaleString()} votes</p>
+                  {/* Level badge instead of the vote count (exact counts are admin-only). */}
+                  <p className="vote-page__votes">{nominee.level.label}</p>
                   <button
                     type="button"
                     className={`btn ${isVoted ? 'btn--gold' : 'btn--outline'} vote-page__btn`}
-                    onClick={() => castVote(nominee.id)}
-                    disabled={isDisabled}
+                    onClick={() => castVote(nominee)}
+                    disabled={isDisabled || isVoted}
                   >
                     {isVoted ? (
                       <>
@@ -122,7 +135,7 @@ export default function VotePage() {
                       </>
                     ) : (
                       <>
-                        <ThumbsUp size={16} /> Vote
+                        <ThumbsUp size={16} /> {sending === nominee.id ? 'Voting…' : 'Vote'}
                       </>
                     )}
                   </button>

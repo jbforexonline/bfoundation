@@ -1,17 +1,27 @@
+import { Vote, Award, Calendar } from 'lucide-react';
 import StatCard from '../../components/ui/StatCard';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
-import { Vote, Award, Calendar } from 'lucide-react';
+import Notice from '../../components/ui/Notice';
+import useApi from '../../hooks/useApi';
+import { formatDate } from '../../api/client';
 import '../../components/dashboard/DashboardPage.scss';
 
-const HISTORY = [
-  { id: 1, date: '2026-08-21', contestant: 'Malaika Uwase', category: 'Best Musician', votesUsed: 10, status: 'Counted' },
-  { id: 2, date: '2026-08-18', contestant: 'Ishimwe Kevin', category: 'Best Footballer', votesUsed: 5, status: 'Counted' },
-  { id: 3, date: '2026-08-12', contestant: 'Grace Umutoni', category: 'Best Influencer', votesUsed: 3, status: 'Counted' },
-  { id: 4, date: '2026-08-05', contestant: 'Divine Ingabire', category: 'Best Comedian', votesUsed: 9, status: 'Counted' },
-];
+const SOURCE_LABEL = { FREE: 'Free vote', PURCHASE: 'Paid', BALANCE: 'Vote balance' };
 
 export default function FanVoteHistoryPage() {
+  const { data, error, loading } = useApi('/votes/history', { limit: 100 });
+  const summary = data?.summary;
+  const rows = (data?.votes ?? []).map((v) => ({
+    id: v.id,
+    date: formatDate(v.createdAt),
+    contestant: v.contestant?.name ?? '—',
+    category: v.category.name,
+    votesUsed: v.votesUsed,
+    type: SOURCE_LABEL[v.source] ?? v.source,
+    status: 'Counted',
+  }));
+
   return (
     <div className="dash-page">
       <div className="dash-page__header">
@@ -21,21 +31,25 @@ export default function FanVoteHistoryPage() {
         </div>
       </div>
 
+      <Notice tone="error">{error?.message}</Notice>
+
       <div className="dash-page__stats">
-        <StatCard icon={Vote} label="Total Votes Cast" value="27" />
-        <StatCard icon={Award} label="Categories Voted In" value="4" />
-        <StatCard icon={Calendar} label="Last Vote" value="Aug 21" />
+        <StatCard icon={Vote} label="Total Votes Cast" value={summary?.totalVotesCast ?? '—'} />
+        <StatCard icon={Award} label="Categories Voted In" value={summary?.categoriesVotedIn ?? '—'} />
+        <StatCard icon={Calendar} label="Last Vote" value={summary?.lastVoteAt ? formatDate(summary.lastVoteAt, { month: 'short', day: 'numeric' }) : '—'} />
       </div>
 
       <DataTable
+        emptyLabel={loading ? 'Loading…' : 'No votes yet. Go to the Vote page to cast your free vote in each category.'}
         columns={[
           { key: 'date', label: 'Date' },
           { key: 'contestant', label: 'Contestant' },
           { key: 'category', label: 'Category' },
           { key: 'votesUsed', label: 'Votes Used' },
+          { key: 'type', label: 'Type' },
           { key: 'status', label: 'Status', render: (row) => <Badge tone="success">{row.status}</Badge> },
         ]}
-        rows={HISTORY}
+        rows={rows}
       />
     </div>
   );

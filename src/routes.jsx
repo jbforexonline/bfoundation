@@ -13,6 +13,8 @@ import EventsPage from './pages/EventsPage';
 import ApplicationPage from './pages/ApplicationPage';
 import AboutPage from './pages/AboutPage';
 import CommunityNominationsPage from './pages/CommunityNominationsPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import RequireRole from './auth/RequireRole';
 
 // Fan Dashboard
 import FanLayout from './pages/fan/FanLayout';
@@ -77,13 +79,18 @@ const routes = [
       { path: 'vote', element: <VotePage /> },
       { path: 'how-to-vote', element: <HowToVotePage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
     ],
   },
 
   // Fan Dashboard
   {
     path: '/dashboard/fan',
-    element: <FanLayout />,
+    element: (
+      <RequireRole roles={['FAN']}>
+        <FanLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="profile" replace /> },
       { path: 'profile', element: <FanProfilePage /> },
@@ -101,7 +108,11 @@ const routes = [
   // Admin Dashboard
   {
     path: '/dashboard/admin',
-    element: <AdminLayout />,
+    element: (
+      <RequireRole roles={['ADMIN', 'MODERATOR']}>
+        <AdminLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="contestants" replace /> },
       { path: 'contestants', element: <AdminContestantsPage /> },
@@ -118,7 +129,11 @@ const routes = [
   // Contestant Dashboard
   {
     path: '/dashboard/contestant',
-    element: <ContestantLayout />,
+    element: (
+      <RequireRole roles={['CONTESTANT']}>
+        <ContestantLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="public-profile" replace /> },
       { path: 'public-profile', element: <ContestantPublicProfilePage /> },

@@ -1,52 +1,59 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
 import { ThumbsUp, Check, Megaphone } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import Notice from '../components/ui/Notice';
+import useApi from '../hooks/useApi';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import './CommunityNominationsPage.scss';
 
-const INITIAL_NOMINATIONS = [
-  {
-    id: 'n1',
-    name: 'Yves Mugenzi',
-    category: 'Best Journalist',
-    reason: 'Broke the story on rural healthcare access and pushed real policy change.',
-    supporters: 214,
-  },
-  {
-    id: 'n2',
-    name: 'Immaculee Nyirahabimana',
-    category: 'Entrepreneur',
-    reason: 'Built a cooperative that now employs over 60 women in Huye district.',
-    supporters: 189,
-  },
-  {
-    id: 'n3',
-    name: 'Placide Rukundo',
-    category: 'Best Dancer',
-    reason: 'Choreographed the Intore revival performances touring secondary schools nationwide.',
-    supporters: 132,
-  },
-  {
-    id: 'n4',
-    name: 'Chantal Mukashyaka',
-    category: 'Best Influencer',
-    reason: 'Uses her platform to promote Kinyarwanda literacy for young children.',
-    supporters: 97,
-  },
-];
-
 export default function CommunityNominationsPage() {
-  const [nominations, setNominations] = useState(INITIAL_NOMINATIONS);
+  const { user } = useAuth();
+  const { openAuth } = useOutletContext() ?? {};
+  const { data, error, loading } = useApi('/nominations', { limit: 60 });
+  const [counts, setCounts] = useState({}); // live supporter counts after supporting
   const [supported, setSupported] = useState({});
+  const [notice, setNotice] = useState(null);
 
-  const support = (id) => {
-    if (supported[id]) return;
-    setSupported((prev) => ({ ...prev, [id]: true }));
-    setNominations((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, supporters: n.supporters + 1 } : n))
-    );
-    // TODO: send this support/endorsement to your backend.
+  // Mark the ones this fan already supported.
+  useEffect(() => {
+    if (user?.role !== 'FAN') return;
+    api('/nominations/supported')
+      .then((d) => setSupported(Object.fromEntries(d.nominations.map((x) => [x.nomination.id, true]))))
+      .catch(() => {});
+  }, [user]);
+
+  const support = async (id) => {
+    setNotice(null);
+    if (!user) {
+      setNotice({ tone: 'info', text: 'Log in as a fan to support a nomination.' });
+      openAuth?.('login');
+      return;
+    }
+    if (user.role !== 'FAN') {
+      setNotice({ tone: 'info', text: 'Only fan accounts can support nominations.' });
+      return;
+    }
+    try {
+      const res = await api(`/nominations/${id}/support`, { method: 'POST', body: { type: 'free' } });
+      setSupported((prev) => ({ ...prev, [id]: true }));
+      setCounts((prev) => ({ ...prev, [id]: res.nomination.supporters }));
+      setNotice({ tone: 'success', text: 'Thanks for your support!' });
+    } catch (err) {
+      if (err.code === 'ALREADY_SUPPORTED') setSupported((prev) => ({ ...prev, [id]: true }));
+      setNotice({ tone: err.code === 'ALREADY_SUPPORTED' ? 'info' : 'error', text: err.message });
+    }
   };
+
+  const nominations = (data?.nominations ?? []).map((n) => ({
+    id: n.id,
+    name: n.nomineeName,
+    category: n.category.name,
+    reason: n.reason,
+    supporters: counts[n.id] ?? n.supporters,
+    qualified: n.status === 'QUALIFIED_FOR_REVIEW',
+  }));
 
   return (
     <>
@@ -63,6 +70,11 @@ export default function CommunityNominationsPage() {
 
       <section className="community-noms section">
         <div className="community-noms__inner">
+          <Notice tone={notice?.tone}>{notice?.text}</Notice>
+          <Notice tone="error">{error?.message}</Notice>
+          {!loading && !error && nominations.length === 0 && (
+            <Notice tone="info">No open nominations yet. Be the first to suggest someone!</Notice>
+          )}
           <div className="community-noms__grid">
             {nominations.map((n) => (
               <div className="community-noms__card" key={n.id}>
@@ -71,7 +83,10 @@ export default function CommunityNominationsPage() {
                 <p className="community-noms__reason">{n.reason}</p>
 
                 <div className="community-noms__footer">
-                  <span className="community-noms__count">{n.supporters} supporters</span>
+                  <span className="community-noms__count">
+                    {n.supporters} supporter{n.supporters === 1 ? '' : 's'}
+                    {n.qualified ? ' · in review' : ''}
+                  </span>
                   <button
                     type="button"
                     className={`btn ${supported[n.id] ? 'btn--outline' : 'btn--gold'} community-noms__support`}

@@ -19,7 +19,7 @@ const NAV_GROUPS = [
 
 export default function FanLayout() {
   return (
-    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Fan" userName="Joyce U.">
+    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Fan">
       <Outlet />
     </DashboardLayout>
   );

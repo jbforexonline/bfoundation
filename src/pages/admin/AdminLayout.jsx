@@ -21,7 +21,7 @@ const NAV_GROUPS = [
 
 export default function AdminLayout() {
   return (
-    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Admin" userName="System Admin">
+    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Admin">
       <Outlet />
     </DashboardLayout>
   );

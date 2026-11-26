@@ -1,34 +1,30 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search, BadgeCheck } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import Notice from '../components/ui/Notice';
+import useApi from '../hooks/useApi';
 import PageHero from '../components/PageHero';
 import './ContestantsPage.scss';
-
-const CATEGORY_FILTERS = ['All', 'Best Musician', 'Best Footballer', 'Best Influencer', 'Best Comedian', 'Best TikToker'];
-
-const CONTESTANTS = [
-  { name: 'Malaika Uwase', category: 'Best Musician', votes: '18,420' },
-  { name: 'Ishimwe Kevin', category: 'Best Footballer', votes: '21,040' },
-  { name: 'Grace Umutoni', category: 'Best Influencer', votes: '13,500' },
-  { name: 'Divine Ingabire', category: 'Best Comedian', votes: '9,640' },
-  { name: 'Bruce Karenzi', category: 'Best Musician', votes: '15,310' },
-  { name: 'Emmanuel Ndayisenga', category: 'Best Footballer', votes: '17,760' },
-  { name: 'Claudine Mukamana', category: 'Best Influencer', votes: '11,890' },
-  { name: 'Sandrine Uwera', category: 'Best Comedian', votes: '8,120' },
-  { name: 'Aline Mutesi', category: 'Best TikToker', votes: '10,420' },
-  { name: 'Eric Niyonzima', category: 'Best TikToker', votes: '7,980' },
-];
 
 function initials(name) {
   return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 }
 
 export default function ContestantsPage() {
+  const [params] = useSearchParams();
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState(params.get('category') ?? 'all'); // category slug
+  const { data, error, loading } = useApi('/contestants', { limit: 100, sort: 'level' });
+  const { data: catData } = useApi('/categories');
 
-  const filtered = CONTESTANTS.filter((c) => {
-    const matchesFilter = filter === 'All' || c.category === filter;
+  // Only categories that currently have contestants, as filter buttons.
+  const filters = [
+    { slug: 'all', name: 'All' },
+    ...(catData?.categories ?? []).filter((c) => c.contestantCount > 0).map((c) => ({ slug: c.slug, name: c.name })),
+  ];
+
+  const filtered = (data?.contestants ?? []).filter((c) => {
+    const matchesFilter = filter === 'all' || c.category.slug === filter;
     const matchesQuery = c.name.toLowerCase().includes(query.trim().toLowerCase());
     return matchesFilter && matchesQuery;
   });
@@ -55,30 +51,45 @@ export default function ContestantsPage() {
             </div>
 
             <div className="contestants-page__filters">
-              {CATEGORY_FILTERS.map((c) => (
+              {filters.map((c) => (
                 <button
-                  key={c}
+                  key={c.slug}
                   type="button"
-                  className={c === filter ? 'is-active' : ''}
-                  onClick={() => setFilter(c)}
+                  className={c.slug === filter ? 'is-active' : ''}
+                  onClick={() => setFilter(c.slug)}
                 >
-                  {c}
+                  {c.name}
                 </button>
               ))}
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          <Notice tone="error">{error?.message}</Notice>
+          {loading ? (
+            <p className="contestants-page__empty">Loading contestants…</p>
+          ) : filtered.length === 0 ? (
             <p className="contestants-page__empty">No contestants match your search.</p>
           ) : (
             <div className="contestants-page__grid">
               {filtered.map((c) => (
-                <div className="contestants-page__card" key={c.name}>
-                  <div className="contestants-page__avatar">{initials(c.name)}</div>
-                  <p className="contestants-page__name">{c.name}</p>
-                  <p className="contestants-page__category">{c.category}</p>
-                  <p className="contestants-page__votes">{c.votes} votes</p>
-                  <Link to="/vote" className="btn btn--gold contestants-page__cta">
+                <div className="contestants-page__card" key={c.id}>
+                  <div className="contestants-page__avatar" style={c.profileImage ? { padding: 0, overflow: 'hidden' } : undefined}>
+                    {c.profileImage ? (
+                      <img src={c.profileImage} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      initials(c.name)
+                    )}
+                  </div>
+                  <p className="contestants-page__name">
+                    {c.name} {c.verified && <BadgeCheck size={15} style={{ color: '#f0a93a', verticalAlign: '-2px' }} aria-label="Verified" />}
+                  </p>
+                  <p className="contestants-page__category">{c.category.name}</p>
+                  {/* The public sees the level badge, never the exact vote count. */}
+                  <p className="contestants-page__votes">
+                    {c.level.label}
+                    {c.officialNominee ? ' · Official Nominee' : ''}
+                  </p>
+                  <Link to={`/vote?category=${c.category.slug}`} className="btn btn--gold contestants-page__cta">
                     Vote Now
                   </Link>
                 </div>

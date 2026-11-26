@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { DASHBOARD_PATHS, useAuth } from '../auth/AuthContext';
 import { Search, ChevronDown } from 'lucide-react';
 import './Header.scss';
 
@@ -16,6 +17,8 @@ const NAV_LINKS = [
 
 export default function Header({ onLoginClick, onSignUpClick }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   return (
     <header className="header">
@@ -59,16 +62,33 @@ export default function Header({ onLoginClick, onSignUpClick }) {
             RWANDA
             <ChevronDown size={14} />
           </button>
-          <button className="header__login" type="button" onClick={onLoginClick}>
-            Log In
-          </button>
-          <button
-            className="btn btn--gold header__signup"
-            type="button"
-            onClick={onSignUpClick}
-          >
-            Sign Up
-          </button>
+          {user ? (
+            <>
+              <button className="header__login" type="button" onClick={() => logout().then(() => navigate('/'))}>
+                Log Out
+              </button>
+              <button
+                className="btn btn--gold header__signup"
+                type="button"
+                onClick={() => navigate(DASHBOARD_PATHS[user.role] ?? '/')}
+              >
+                My Dashboard
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="header__login" type="button" onClick={onLoginClick}>
+                Log In
+              </button>
+              <button
+                className="btn btn--gold header__signup"
+                type="button"
+                onClick={onSignUpClick}
+              >
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
       </div>
     </header>

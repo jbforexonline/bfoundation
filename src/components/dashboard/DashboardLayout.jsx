@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import DashboardClock from './DashboardClock';
+import { useAuth } from '../../auth/AuthContext';
 import './DashboardLayout.scss';
 
-function initialsOf(name) {
+function initialsOf(name = '') {
   return name
     .split(' ')
     .map((part) => part[0])
@@ -17,11 +18,13 @@ function initialsOf(name) {
  * navGroups: [{ label?, items: [{ label, to, icon, end? }] }]
  * A group without a label renders as a plain flat list (used by Fan/Admin).
  */
-export default function DashboardLayout({ navGroups, roleLabel, userName = 'Guest', children }) {
+export default function DashboardLayout({ navGroups, roleLabel, children }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const userName = user?.name ?? 'Guest';
 
-  const handleSignOut = () => {
-    // TODO: clear the real auth session/token here before redirecting.
+  const handleSignOut = async () => {
+    await logout();
     navigate('/');
   };
 

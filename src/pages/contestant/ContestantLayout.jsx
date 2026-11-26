@@ -49,7 +49,7 @@ const NAV_GROUPS = [
 
 export default function ContestantLayout() {
   return (
-    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Contestant" userName="Malaika Uwase">
+    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Contestant">
       <Outlet />
     </DashboardLayout>
   );

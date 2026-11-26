@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { User, Mail, Phone, Award, Link2, FileText } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import Notice from '../components/ui/Notice';
+import useApi from '../hooks/useApi';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import '../components/auth/AuthForm.scss';
 import './ApplicationPage.scss';
 
@@ -22,6 +26,12 @@ export default function ApplicationPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { isLoggedIn } = useAuth();
+  // Live category list (falls back to the built-in names while loading / offline).
+  const { data: catData } = useApi('/categories');
+  const categoryNames = catData?.categories?.length ? catData.categories.map((c) => c.name) : CATEGORIES;
 
   const update = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -37,13 +47,24 @@ export default function ApplicationPage() {
     return next;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const next = validate();
     setErrors(next);
+    setApiError('');
+    setSubmitted(false);
     if (Object.keys(next).length === 0) {
-      // TODO: wire up to your real contestant-application endpoint.
-      console.log('Application submitted', form);
+      setLoading(true);
+      try {
+        // No login needed; if logged in, the token links the application to the account.
+        await api('/applications', { method: 'POST', body: form, auth: isLoggedIn });
+      } catch (err) {
+        setErrors(err.fieldErrors ?? {});
+        setApiError(err.message);
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
       setSubmitted(true);
       setForm(INITIAL_FORM);
     }
@@ -60,6 +81,7 @@ export default function ApplicationPage() {
       <section className="application-page section">
         <div className="application-page__inner">
           <div className="application-page__form-card">
+            <Notice tone="error">{apiError}</Notice>
             {submitted && (
               <p className="auth-form__success" role="status">
                 Application received — our team will review it and follow up by email.
@@ -82,7 +104,7 @@ export default function ApplicationPage() {
                   <div className="auth-form__input-wrap auth-form__input-wrap--select">
                     <Award size={16} />
                     <select id="app-category" value={form.category} onChange={update('category')}>
-                      {CATEGORIES.map((c) => (
+                      {categoryNames.map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
@@ -116,6 +138,7 @@ export default function ApplicationPage() {
                   <Link2 size={16} />
                   <input id="app-portfolio" type="url" placeholder="https://" value={form.portfolio} onChange={update('portfolio')} />
                 </div>
+                {errors.portfolio && <span className="auth-form__error">{errors.portfolio}</span>}
               </div>
 
               <div className="auth-form__field">
@@ -133,8 +156,8 @@ export default function ApplicationPage() {
                 {errors.pitch && <span className="auth-form__error">{errors.pitch}</span>}
               </div>
 
-              <button type="submit" className="btn btn--gold auth-form__submit" style={{ width: 'auto', padding: '12px 28px' }}>
-                Submit Application
+              <button type="submit" className="btn btn--gold auth-form__submit" style={{ width: 'auto', padding: '12px 28px' }} disabled={loading}>
+                {loading ? 'Submitting…' : 'Submit Application'}
               </button>
             </form>
           </div>

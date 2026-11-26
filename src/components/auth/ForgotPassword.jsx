@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Mail, ArrowLeft } from 'lucide-react';
+import { api } from '../../api/client';
 import './AuthForm.scss';
 
 export default function ForgotPassword({ onBackToLogin }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
       setError('Enter the email address on your account.');
@@ -18,9 +20,16 @@ export default function ForgotPassword({ onBackToLogin }) {
       return;
     }
     setError('');
-    // TODO: wire up to your real password-reset endpoint.
-    console.log('Password reset requested for', email);
-    setSent(true);
+    setLoading(true);
+    try {
+      // Always answers the same way whether or not the account exists (privacy).
+      await api('/auth/forgot-password', { method: 'POST', body: { email: email.trim() }, auth: false });
+      setSent(true);
+    } catch (err) {
+      setError(err.fieldErrors?.email ?? err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,8 +67,8 @@ export default function ForgotPassword({ onBackToLogin }) {
             {error && <span className="auth-form__error">{error}</span>}
           </div>
 
-          <button type="submit" className="btn btn--gold auth-form__submit">
-            Send Reset Link
+          <button type="submit" className="btn btn--gold auth-form__submit" disabled={loading}>
+            {loading ? 'Sending…' : 'Send Reset Link'}
           </button>
 
           <p className="auth-form__switch">
