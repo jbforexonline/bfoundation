@@ -15,10 +15,14 @@ export default function App() {
   const [params, setParams] = useSearchParams();
   const [banner, setBanner] = useState(null);
 
-  // ?login=1 (sent by protected pages) opens the login form.
+  // ?login=1 (sent by protected pages and the /login link in emails) opens the login form.
   // ?emailVerified=true|false comes back from the link in the verification email.
+  const wantsLogin = params.get('login') === '1';
   useEffect(() => {
-    if (params.get('login') === '1') setAuthModal({ isOpen: true, mode: 'login' });
+    if (wantsLogin) setAuthModal({ isOpen: true, mode: 'login' });
+  }, [wantsLogin]);
+
+  useEffect(() => {
     const verified = params.get('emailVerified');
     if (verified) {
       setBanner(

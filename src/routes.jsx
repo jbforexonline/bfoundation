@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import App from './App';
 import Home from './pages/Home';
 import HallOfFamePage from './pages/HallOfFamePage';
@@ -59,6 +59,13 @@ import ContestantMessagesPage from './pages/contestant/ContestantMessagesPage';
 
 // Public pages render inside <App /> (shared Header/Footer/auth modal via <Outlet />).
 // Each dashboard below is a separate top-level route tree with its own self-contained shell.
+// /login (used in emails) opens the login form on the home page, keeping ?role= and ?next=.
+function LoginRedirect() {
+  const params = new URLSearchParams(useLocation().search);
+  params.set('login', '1');
+  return <Navigate to={`/?${params}`} replace />;
+}
+
 const routes = [
   {
     path: '/',
@@ -80,6 +87,7 @@ const routes = [
       { path: 'how-to-vote', element: <HowToVotePage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'login', element: <LoginRedirect /> },
     ],
   },
 

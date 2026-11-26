@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Chrome, Facebook, User, Star, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
 import Notice from '../ui/Notice';
@@ -11,7 +12,12 @@ const ROLES = [
 ];
 
 export default function Login({ onSwitchMode, onForgotPassword, onClose }) {
-  const [role, setRole] = useState('fan'); // 'fan' | 'contestant' | 'admin'
+  // ?role=contestant (e.g. from the "application approved" email) preselects that tab.
+  const [params] = useSearchParams();
+  const [role, setRole] = useState(() => {
+    const wanted = params.get('role');
+    return ROLES.some((r) => r.key === wanted) ? wanted : 'fan';
+  }); // 'fan' | 'contestant' | 'admin'
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
