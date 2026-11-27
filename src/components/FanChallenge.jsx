@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import './FanChallenge.scss';
 
@@ -31,10 +32,10 @@ export default function FanChallenge() {
           <p className="fan-challenge__prize-note">
             Winner&rsquo;s fund goes to BFOUNDATION impact projects.
           </p>
-          <button className="btn btn--gold" type="button">
+          <Link to="/events" className="btn btn--gold">
             Explore Challenges
             <ArrowRight size={16} />
-          </button>
+          </Link>
         </div>
       </div>
     </section>

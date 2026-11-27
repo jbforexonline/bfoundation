@@ -1,0 +1,28 @@
+@use '../../styles/variables' as *;
+
+.ui-notice {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  margin: 0 0 16px;
+  border: 1px solid;
+
+  &--success {
+    background: rgba(62, 201, 95, 0.12);
+    border-color: rgba(62, 201, 95, 0.35);
+    color: $color-green;
+  }
+
+  &--error {
+    background: rgba(209, 59, 59, 0.12);
+    border-color: rgba(209, 59, 59, 0.4);
+    color: #ff8a8a;
+  }
+
+  &--info {
+    background: rgba(240, 169, 58, 0.1);
+    border-color: $color-border-soft;
+    color: $color-text;
+  }
+}

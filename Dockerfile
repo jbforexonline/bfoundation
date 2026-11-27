@@ -8,6 +8,10 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+# Backend API address, baked into the build (set it as a build argument in Dokploy),
+# e.g. https://api.bfoundation.rw/api/v1
+ARG VITE_API_URL=http://localhost:5000/api/v1
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginx:alpine AS runtime

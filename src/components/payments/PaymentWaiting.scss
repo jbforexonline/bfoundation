@@ -1,0 +1,59 @@
+@use '../../styles/variables' as *;
+
+.payment-waiting {
+  @include card-panel;
+  padding: 28px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 520px;
+
+  &__icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(240, 169, 58, 0.14);
+    color: $color-gold;
+    margin-bottom: 6px;
+
+    &--pulse { animation: payment-pulse 1.6s ease-in-out infinite; }
+  }
+
+  &--ok &__icon { background: rgba(62, 201, 95, 0.15); color: #3ec95f; }
+  &--failed &__icon { background: rgba(209, 59, 59, 0.15); color: #e0556b; }
+
+  &__title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: $color-white;
+  }
+
+  &__text {
+    font-size: 0.85rem;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
+
+  &__hint {
+    font-size: 0.78rem;
+    color: $color-text-faint;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+  }
+}
+
+@keyframes payment-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240, 169, 58, 0.35); }
+  50% { box-shadow: 0 0 0 12px rgba(240, 169, 58, 0); }
+}

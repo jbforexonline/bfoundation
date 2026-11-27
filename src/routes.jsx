@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import App from './App';
 import Home from './pages/Home';
 import HallOfFamePage from './pages/HallOfFamePage';
@@ -13,6 +13,8 @@ import EventsPage from './pages/EventsPage';
 import ApplicationPage from './pages/ApplicationPage';
 import AboutPage from './pages/AboutPage';
 import CommunityNominationsPage from './pages/CommunityNominationsPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import RequireRole from './auth/RequireRole';
 
 // Fan Dashboard
 import FanLayout from './pages/fan/FanLayout';
@@ -25,6 +27,7 @@ import FanFavoritesPage from './pages/fan/FanFavoritesPage';
 import FanNotificationsPage from './pages/fan/FanNotificationsPage';
 import FanEventTicketsPage from './pages/fan/FanEventTicketsPage';
 import FanVoteCheckoutPage from './pages/fan/FanVoteCheckoutPage';
+import FanNominationsPage from './pages/fan/FanNominationsPage';
 
 // Admin Dashboard
 import AdminLayout from './pages/admin/AdminLayout';
@@ -36,6 +39,11 @@ import AdminEventsPage from './pages/admin/AdminEventsPage';
 import AdminSponsorsPage from './pages/admin/AdminSponsorsPage';
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
+import AdminNominationsPage from './pages/admin/AdminNominationsPage';
+import AdminHallOfFamePage from './pages/admin/AdminHallOfFamePage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminInboxPage from './pages/admin/AdminInboxPage';
+import AdminSecurityPage from './pages/admin/AdminSecurityPage';
 
 // Contestant Dashboard
 import ContestantLayout from './pages/contestant/ContestantLayout';
@@ -57,6 +65,13 @@ import ContestantMessagesPage from './pages/contestant/ContestantMessagesPage';
 
 // Public pages render inside <App /> (shared Header/Footer/auth modal via <Outlet />).
 // Each dashboard below is a separate top-level route tree with its own self-contained shell.
+// /login (used in emails) opens the login form on the home page, keeping ?role= and ?next=.
+function LoginRedirect() {
+  const params = new URLSearchParams(useLocation().search);
+  params.set('login', '1');
+  return <Navigate to={`/?${params}`} replace />;
+}
+
 const routes = [
   {
     path: '/',
@@ -77,13 +92,19 @@ const routes = [
       { path: 'vote', element: <VotePage /> },
       { path: 'how-to-vote', element: <HowToVotePage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'login', element: <LoginRedirect /> },
     ],
   },
 
   // Fan Dashboard
   {
     path: '/dashboard/fan',
-    element: <FanLayout />,
+    element: (
+      <RequireRole roles={['FAN']}>
+        <FanLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="profile" replace /> },
       { path: 'profile', element: <FanProfilePage /> },
@@ -95,13 +116,18 @@ const routes = [
       { path: 'favorites', element: <FanFavoritesPage /> },
       { path: 'notifications', element: <FanNotificationsPage /> },
       { path: 'event-tickets', element: <FanEventTicketsPage /> },
+      { path: 'nominations', element: <FanNominationsPage /> },
     ],
   },
 
   // Admin Dashboard
   {
     path: '/dashboard/admin',
-    element: <AdminLayout />,
+    element: (
+      <RequireRole roles={['ADMIN', 'MODERATOR']}>
+        <AdminLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="contestants" replace /> },
       { path: 'contestants', element: <AdminContestantsPage /> },
@@ -112,13 +138,22 @@ const routes = [
       { path: 'sponsors', element: <AdminSponsorsPage /> },
       { path: 'applications', element: <AdminApplicationsPage /> },
       { path: 'analytics', element: <AdminAnalyticsPage /> },
+      { path: 'nominations', element: <AdminNominationsPage /> },
+      { path: 'hall-of-fame', element: <AdminHallOfFamePage /> },
+      { path: 'users', element: <AdminUsersPage /> },
+      { path: 'inbox', element: <AdminInboxPage /> },
+      { path: 'security', element: <AdminSecurityPage /> },
     ],
   },
 
   // Contestant Dashboard
   {
     path: '/dashboard/contestant',
-    element: <ContestantLayout />,
+    element: (
+      <RequireRole roles={['CONTESTANT']}>
+        <ContestantLayout />
+      </RequireRole>
+    ),
     children: [
       { index: true, element: <Navigate to="public-profile" replace /> },
       { path: 'public-profile', element: <ContestantPublicProfilePage /> },

@@ -1,15 +1,22 @@
 import { useState } from 'react';
 import { MailCheck, RotateCw } from 'lucide-react';
+import { api } from '../../api/client';
+import Notice from '../ui/Notice';
 import './AuthForm.scss';
 
 export default function VerifyEmail({ email, onContinue }) {
   const [resent, setResent] = useState(false);
+  const [error, setError] = useState('');
 
-  const resend = () => {
-    // TODO: wire up to your real "resend verification email" endpoint.
-    console.log('Resent verification email to', email);
-    setResent(true);
-    setTimeout(() => setResent(false), 2500);
+  const resend = async () => {
+    setError('');
+    try {
+      await api('/auth/resend-verification', { method: 'POST', body: { email }, auth: false });
+      setResent(true);
+      setTimeout(() => setResent(false), 2500);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -31,8 +38,10 @@ export default function VerifyEmail({ email, onContinue }) {
         </p>
       )}
 
+      <Notice tone="error">{error}</Notice>
+
       <div className="auth-form" style={{ marginTop: 8 }}>
-        <button type="button" className="btn btn--gold auth-form__submit" onClick={onContinue}>
+        <button type="button" className="btn btn--gold auth-form__submit" onClick={() => onContinue?.()}>
           Continue to Dashboard
         </button>
 

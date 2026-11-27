@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Globe, Chrome, Facebook } from 'lucide-react';
+import { useAuth } from '../../auth/AuthContext';
+import Notice from '../ui/Notice';
 import './AuthForm.scss';
 
 const COUNTRIES = ['Rwanda', 'Burundi', 'Uganda', 'Kenya', 'Tanzania'];
@@ -20,6 +22,9 @@ export default function SignUp({ onSwitchMode, onClose, onSignedUp }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
 
   const update = (field) => (e) => {
     const value = field === 'agree' ? e.target.checked : e.target.value;
@@ -39,16 +44,36 @@ export default function SignUp({ onSwitchMode, onClose, onSignedUp }) {
     return next;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const next = validate();
     setErrors(next);
-    if (Object.keys(next).length === 0) {
-      // TODO: wire up to your real sign-up endpoint.
-      console.log('Sign up with', form);
+    setApiError('');
+    if (Object.keys(next).length > 0) return;
+    setLoading(true);
+    try {
+      // Creates a fan account (logged in straight away) and emails a verification link.
+      // Invite link (?ref=CODE) saved by App.jsx: the friend who invited us gets bonus votes.
+      let referralCode;
+      try {
+        referralCode = localStorage.getItem('bf_ref') || undefined;
+      } catch {
+        referralCode = undefined;
+      }
+      await register({ ...form, email: form.email.trim(), referralCode });
+      try {
+        localStorage.removeItem('bf_ref');
+      } catch {
+        /* ignore */
+      }
       setSubmitted(true);
-      const email = form.email;
+      const email = form.email.trim();
       setTimeout(() => onSignedUp?.(email), 900);
+    } catch (err) {
+      setErrors(err.fieldErrors ?? {});
+      setApiError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,6 +89,8 @@ export default function SignUp({ onSwitchMode, onClose, onSignedUp }) {
           Account created! Check your email to verify your address.
         </p>
       )}
+
+      <Notice tone="error">{apiError}</Notice>
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <div className="auth-form__field">
@@ -186,8 +213,8 @@ export default function SignUp({ onSwitchMode, onClose, onSignedUp }) {
         </label>
         {errors.agree && <span className="auth-form__error">{errors.agree}</span>}
 
-        <button type="submit" className="btn btn--gold auth-form__submit">
-          Create Account
+        <button type="submit" className="btn btn--gold auth-form__submit" disabled={loading}>
+          {loading ? 'Creating account…' : 'Create Account'}
         </button>
 
         <div className="auth-form__divider">or continue with</div>

@@ -35,6 +35,8 @@
   }
 
   &__card {
+    text-decoration: none;
+    color: inherit;
     @include card-panel;
     background: $color-bg-panel;
     display: flex;
@@ -63,6 +65,7 @@
   }
 
   &__view-all {
+    text-decoration: none;
     margin-top: 32px;
   }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DASHBOARD_PATHS, useAuth } from '../../auth/AuthContext';
 import { X, Star, Users2, Sun, Heart } from 'lucide-react';
 import Login from './Login';
 import SignUp from './SignUp';
@@ -21,14 +22,10 @@ const TITLES = {
   verify: 'Verify email',
 };
 
-const DASHBOARD_PATHS = {
-  fan: '/dashboard/fan/profile',
-  contestant: '/dashboard/contestant/public-profile',
-  admin: '/dashboard/admin/contestants',
-};
-
 export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const { user: currentUser } = useAuth();
   const [pendingEmail, setPendingEmail] = useState('');
 
   // Close on Escape, lock body scroll while open.
@@ -49,9 +46,12 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
 
   if (!isOpen) return null;
 
-  const goToDashboard = (role = 'fan') => {
+  // After login / sign-up: back to the page that asked for login (?next=) or the user's dashboard.
+  const goToDashboard = (loggedInUser) => {
+    const u = loggedInUser ?? currentUser;
+    const next = params.get('next');
     onClose();
-    navigate(DASHBOARD_PATHS[role] ?? DASHBOARD_PATHS.fan);
+    navigate(next && next.startsWith('/') ? next : DASHBOARD_PATHS[u?.role] ?? '/');
   };
 
   return (

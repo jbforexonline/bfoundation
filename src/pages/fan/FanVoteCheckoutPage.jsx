@@ -1,75 +1,102 @@
-import { useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Check, Smartphone, CreditCard, Globe2, ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Check, Smartphone, CreditCard, Globe2, ArrowLeft, Wallet } from 'lucide-react';
+import Notice from '../../components/ui/Notice';
+import PaymentWaiting from '../../components/payments/PaymentWaiting';
+import useApi from '../../hooks/useApi';
+import { api, formatRwf } from '../../api/client';
+import { isRwandaMobileMoney, usePaymentConfig } from '../../api/payments';
 import '../../components/dashboard/DashboardPage.scss';
 import '../../components/auth/AuthForm.scss';
 import './FanVoteCheckoutPage.scss';
 
-const PACKAGES = [
-  { votes: 1, price: '2,000 RWF' },
-  { votes: 10, price: '20,000 RWF' },
-  { votes: 50, price: '90,000 RWF' },
-  { votes: 100, price: '180,000 RWF' },
-  { votes: 500, price: '800,000 RWF' },
-];
-
+// Only Mobile Money is live: Paypack handles MTN MoMo and Airtel Money. Cards need another provider later.
 const METHODS = [
-  { key: 'momo', label: 'Mobile Money', icon: Smartphone },
-  { key: 'card', label: 'Cards', icon: CreditCard },
-  { key: 'intl', label: 'International Payments', icon: Globe2 },
+  { key: 'momo', label: 'Mobile Money', icon: Smartphone, available: true },
+  { key: 'card', label: 'Cards (soon)', icon: CreditCard, available: false },
+  { key: 'intl', label: 'International (soon)', icon: Globe2, available: false },
 ];
 
+// Buy a vote package. With a contestant: the votes go straight to them once paid.
+// Without one: they go to the fan's vote balance, to use later on the Vote page.
 export default function FanVoteCheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const contestant = location.state?.contestant;
+  const [params] = useSearchParams();
+  const payConfig = usePaymentConfig();
+  const packages = useApi('/votes/packages');
 
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [method, setMethod] = useState('momo');
-  const [fields, setFields] = useState({ phone: '', cardNumber: '', expiry: '', cvv: '', nameOnCard: '', country: 'Rwanda' });
+  // The contestant comes from the Contestants page (router state) or a link (?contestant=<id>).
+  const [contestant, setContestant] = useState(location.state?.contestant ?? null);
+  useEffect(() => {
+    const id = params.get('contestant');
+    if (!contestant && id) {
+      api(`/contestants/${id}`, { auth: false })
+        .then((d) => setContestant(d.contestant))
+        .catch(() => {});
+    }
+  }, [params, contestant]);
+
+  const [selected, setSelected] = useState(null); // package
+  const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState({});
-  const [paid, setPaid] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [sending, setSending] = useState(false);
+  const [started, setStarted] = useState(null); // { purchase, payment, instructions }
+  const [result, setResult] = useState(null); // 'SUCCESSFUL' | 'FAILED'
 
-  const update = (field) => (e) => setFields((prev) => ({ ...prev, [field]: e.target.value }));
-
-  if (!contestant) {
-    return (
-      <div className="dash-page">
-        <div className="dash-page__header">
-          <div>
-            <h1 className="dash-page__title">Vote</h1>
-            <p className="dash-page__subtitle">Pick a contestant to vote for first.</p>
-          </div>
-        </div>
-        <Link to="/dashboard/fan/contestants" className="btn btn--gold" style={{ width: 'fit-content' }}>
-          Browse Contestants
-        </Link>
-      </div>
-    );
-  }
-
-  const validate = () => {
-    const next = {};
-    if (!selectedPackage) next.package = 'Choose how many votes to buy.';
-    if (method === 'momo' && !fields.phone.trim()) next.phone = 'Enter the mobile money number.';
-    if ((method === 'card' || method === 'intl') && !fields.cardNumber.trim()) next.cardNumber = 'Enter your card number.';
-    if ((method === 'card' || method === 'intl') && !fields.expiry.trim()) next.expiry = 'Enter the expiry date.';
-    if ((method === 'card' || method === 'intl') && !fields.cvv.trim()) next.cvv = 'Enter the CVV.';
-    return next;
-  };
-
-  const handlePay = (e) => {
+  const pay = async (e) => {
     e.preventDefault();
-    const next = validate();
+    const next = {};
+    if (!selected) next.package = 'Choose how many votes to buy.';
+    if (!isRwandaMobileMoney(phone)) next.phone = 'Enter an MTN or Airtel Rwanda number (07X XXX XXXX).';
     setErrors(next);
-    if (Object.keys(next).length === 0) {
-      // TODO: send this to your real payment gateway (Mobile Money / card processor).
-      console.log('Vote purchase', { contestant, package: selectedPackage, method, fields });
-      setPaid(true);
+    setFormError('');
+    if (Object.keys(next).length) return;
+
+    setSending(true);
+    try {
+      // Step 1: create the purchase. The backend asks Paypack to send the prompt to this phone.
+      const data = await api('/votes/purchases', {
+        method: 'POST',
+        body: { packageId: selected.id, contestantId: contestant?.id, paymentMethod: 'momo', phone },
+      });
+      setStarted(data); // Step 2: show "approve on your phone" and wait (PaymentWaiting)
+    } catch (err) {
+      setErrors(err.fieldErrors ?? {});
+      setFormError(err.message);
+    } finally {
+      setSending(false);
     }
   };
 
-  if (paid) {
+  const cancel = async () => {
+    try {
+      await api(`/votes/purchases/${started.purchase.id}/cancel`, { method: 'POST' });
+    } catch {
+      /* already paid or failed: nothing to cancel */
+    }
+    setStarted(null);
+  };
+
+  const header = (
+    <div className="dash-page__header">
+      <div>
+        <button type="button" className="vote-checkout__back" onClick={() => navigate(-1)}>
+          <ArrowLeft size={15} /> Back
+        </button>
+        <h1 className="dash-page__title">{contestant ? `Buy votes for ${contestant.name}` : 'Buy votes'}</h1>
+        <p className="dash-page__subtitle">
+          {contestant
+            ? `${contestant.category?.name ?? ''} — the votes go to ${contestant.name} as soon as the payment is confirmed.`
+            : 'The votes are added to your vote balance. Use them on any contestant from the Vote page.'}
+        </p>
+      </div>
+    </div>
+  );
+
+  // Step 3: the result.
+  if (result === 'SUCCESSFUL') {
     return (
       <div className="dash-page">
         <div className="vote-checkout__success">
@@ -78,15 +105,22 @@ export default function FanVoteCheckoutPage() {
           </div>
           <h2>Payment successful!</h2>
           <p>
-            {selectedPackage.votes} vote{selectedPackage.votes > 1 ? 's' : ''} for{' '}
-            <strong>{contestant.name}</strong> ({selectedPackage.price}) have been added.
+            {selected.votes} vote{selected.votes > 1 ? 's' : ''} ({formatRwf(selected.priceRwf)}){' '}
+            {selected.votes > 1 ? 'were' : 'was'}{' '}
+            {contestant ? (
+              <>
+                added for <strong>{contestant.name}</strong>.
+              </>
+            ) : (
+              'added to your vote balance.'
+            )}
           </p>
           <div className="vote-checkout__success-actions">
             <Link to="/dashboard/fan/purchased-votes" className="btn btn--outline">
               View Purchased Votes
             </Link>
-            <Link to="/dashboard/fan/contestants" className="btn btn--gold">
-              Back to Contestants
+            <Link to={contestant ? '/dashboard/fan/contestants' : '/vote'} className="btn btn--gold">
+              {contestant ? 'Back to Contestants' : 'Use my votes'}
             </Link>
           </div>
         </div>
@@ -94,51 +128,76 @@ export default function FanVoteCheckoutPage() {
     );
   }
 
+  if (started) {
+    return (
+      <div className="dash-page">
+        {header}
+        <PaymentWaiting
+          payment={started.payment}
+          instructions={started.instructions}
+          mode={payConfig?.mode}
+          onFinished={(status) => setResult(status)}
+          onCancel={result ? undefined : cancel}
+        />
+        {result === 'FAILED' && (
+          <button type="button" className="btn btn--gold" style={{ marginTop: 16 }} onClick={() => { setStarted(null); setResult(null); }}>
+            Try again
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const off = payConfig && !payConfig.enabled;
+
   return (
     <div className="dash-page">
-      <div className="dash-page__header">
-        <div>
-          <button type="button" className="vote-checkout__back" onClick={() => navigate(-1)}>
-            <ArrowLeft size={15} /> Back
-          </button>
-          <h1 className="dash-page__title">Vote for {contestant.name}</h1>
-          <p className="dash-page__subtitle">{contestant.category} — choose a vote package and payment method.</p>
-        </div>
-      </div>
+      {header}
+
+      {off && <Notice tone="info">Buying votes is not available yet. You can still use your free vote on the Vote page.</Notice>}
+      {payConfig?.mode === 'test' && <Notice tone="info">Test mode: payments are simulated and no real money is taken.</Notice>}
+      <Notice tone="error">{formError || packages.error?.message}</Notice>
 
       <div className="vote-checkout">
         <div className="vote-checkout__packages">
-          <h2 className="dash-page__section-title">Paid Votes</h2>
+          <h2 className="dash-page__section-title">Vote packages</h2>
           <div className="vote-checkout__table">
             <div className="vote-checkout__table-head">
               <span>Votes</span>
               <span>Price</span>
             </div>
-            {PACKAGES.map((pkg) => (
+            {(packages.data?.packages ?? []).map((pkg) => (
               <button
                 type="button"
-                key={pkg.votes}
-                className={`vote-checkout__table-row ${selectedPackage?.votes === pkg.votes ? 'is-selected' : ''}`}
-                onClick={() => setSelectedPackage(pkg)}
+                key={pkg.id}
+                className={`vote-checkout__table-row ${selected?.id === pkg.id ? 'is-selected' : ''}`}
+                onClick={() => setSelected(pkg)}
               >
                 <span>{pkg.votes.toLocaleString()}</span>
-                <span>{pkg.price}</span>
+                <span>{formatRwf(pkg.priceRwf)}</span>
               </button>
             ))}
           </div>
           {errors.package && <span className="auth-form__error">{errors.package}</span>}
+          {!contestant && (
+            <p style={{ color: '#a8a49b', fontSize: '0.8rem', marginTop: 10 }}>
+              <Wallet size={13} style={{ verticalAlign: -2 }} /> Want to give them straight to someone? Open a contestant and click “Buy votes”.
+            </p>
+          )}
         </div>
 
         <div className="vote-checkout__payment">
-          <h2 className="dash-page__section-title">Payment Method</h2>
+          <h2 className="dash-page__section-title">Payment method</h2>
 
           <div className="vote-checkout__methods">
-            {METHODS.map(({ key, label, icon: Icon }) => (
+            {METHODS.map(({ key, label, icon: Icon, available }) => (
               <button
                 key={key}
                 type="button"
-                className={`vote-checkout__method ${method === key ? 'is-active' : ''}`}
-                onClick={() => setMethod(key)}
+                className={`vote-checkout__method ${key === 'momo' ? 'is-active' : ''}`}
+                disabled={!available}
+                title={available ? undefined : 'Not available yet'}
+                style={available ? undefined : { opacity: 0.45, cursor: 'not-allowed' }}
               >
                 <Icon size={18} />
                 {label}
@@ -146,90 +205,19 @@ export default function FanVoteCheckoutPage() {
             ))}
           </div>
 
-          <form className="auth-form" onSubmit={handlePay} noValidate>
-            {method === 'momo' && (
-              <div className="auth-form__field">
-                <label htmlFor="momo-phone">Mobile money number</label>
-                <div className="auth-form__input-wrap">
-                  <Smartphone size={16} />
-                  <input
-                    id="momo-phone"
-                    type="tel"
-                    placeholder="+250 7xx xxx xxx"
-                    value={fields.phone}
-                    onChange={update('phone')}
-                  />
-                </div>
-                {errors.phone && <span className="auth-form__error">{errors.phone}</span>}
+          <form className="auth-form" onSubmit={pay} noValidate>
+            <div className="auth-form__field">
+              <label htmlFor="momo-phone">MTN or Airtel number</label>
+              <div className="auth-form__input-wrap">
+                <Smartphone size={16} />
+                <input id="momo-phone" type="tel" placeholder="078 xxx xxxx" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
-            )}
+              {errors.phone && <span className="auth-form__error">{errors.phone}</span>}
+            </div>
+            <p style={{ color: '#a8a49b', fontSize: '0.8rem' }}>You will get a prompt on this phone. Approve it with your mobile-money PIN.</p>
 
-            {(method === 'card' || method === 'intl') && (
-              <>
-                <div className="auth-form__field">
-                  <label htmlFor="card-name">Name on card</label>
-                  <div className="auth-form__input-wrap">
-                    <CreditCard size={16} />
-                    <input id="card-name" type="text" value={fields.nameOnCard} onChange={update('nameOnCard')} />
-                  </div>
-                </div>
-
-                <div className="auth-form__field">
-                  <label htmlFor="card-number">Card number</label>
-                  <div className="auth-form__input-wrap">
-                    <CreditCard size={16} />
-                    <input
-                      id="card-number"
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={fields.cardNumber}
-                      onChange={update('cardNumber')}
-                    />
-                  </div>
-                  {errors.cardNumber && <span className="auth-form__error">{errors.cardNumber}</span>}
-                </div>
-
-                <div className="auth-form__row">
-                  <div className="auth-form__field">
-                    <label htmlFor="card-expiry">Expiry</label>
-                    <div className="auth-form__input-wrap">
-                      <CreditCard size={16} />
-                      <input id="card-expiry" type="text" placeholder="MM/YY" value={fields.expiry} onChange={update('expiry')} />
-                    </div>
-                    {errors.expiry && <span className="auth-form__error">{errors.expiry}</span>}
-                  </div>
-
-                  <div className="auth-form__field">
-                    <label htmlFor="card-cvv">CVV</label>
-                    <div className="auth-form__input-wrap">
-                      <CreditCard size={16} />
-                      <input id="card-cvv" type="text" placeholder="123" value={fields.cvv} onChange={update('cvv')} />
-                    </div>
-                    {errors.cvv && <span className="auth-form__error">{errors.cvv}</span>}
-                  </div>
-                </div>
-
-                {method === 'intl' && (
-                  <div className="auth-form__field">
-                    <label htmlFor="billing-country">Billing country</label>
-                    <div className="auth-form__input-wrap auth-form__input-wrap--select">
-                      <Globe2 size={16} />
-                      <select id="billing-country" value={fields.country} onChange={update('country')}>
-                        <option>Rwanda</option>
-                        <option>United States</option>
-                        <option>United Kingdom</option>
-                        <option>Belgium</option>
-                        <option>Canada</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            <button type="submit" className="btn btn--gold auth-form__submit">
-              {selectedPackage ? `Pay ${selectedPackage.price}` : 'Select a package to pay'}
+            <button type="submit" className="btn btn--gold auth-form__submit" disabled={sending || off || !payConfig}>
+              {sending ? 'Starting payment…' : selected ? `Pay ${formatRwf(selected.priceRwf)}` : 'Select a package to pay'}
             </button>
           </form>
         </div>

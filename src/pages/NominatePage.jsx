@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { User, Mail, Award, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PageHero from '../components/PageHero';
+import Notice from '../components/ui/Notice';
+import useApi from '../hooks/useApi';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import '../components/auth/AuthForm.scss';
 import './NominatePage.scss';
 
@@ -21,6 +26,11 @@ export default function NominatePage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { isLoggedIn } = useAuth();
+  const { data: catData } = useApi('/categories');
+  const categoryNames = catData?.categories?.length ? catData.categories.map((c) => c.name) : CATEGORIES;
 
   const update = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -38,13 +48,24 @@ export default function NominatePage() {
     return next;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const next = validate();
     setErrors(next);
+    setApiError(null);
+    setSubmitted(false);
     if (Object.keys(next).length === 0) {
-      // TODO: wire up to your real nomination endpoint.
-      console.log('Nomination submitted', form);
+      setLoading(true);
+      try {
+        await api('/nominations', { method: 'POST', body: form, auth: isLoggedIn });
+      } catch (err) {
+        setErrors(err.fieldErrors ?? {});
+        // Already nominated → point people to the existing nomination so they can support it.
+        setApiError({ message: err.message, duplicate: err.code === 'NOMINATION_EXISTS' });
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
       setSubmitted(true);
       setForm(INITIAL_FORM);
     }
@@ -61,6 +82,16 @@ export default function NominatePage() {
       <section className="nominate-page section">
         <div className="nominate-page__inner">
           <div className="nominate-page__form-card">
+            {apiError && (
+              <Notice tone="error">
+                {apiError.message}{' '}
+                {apiError.duplicate && (
+                  <Link to="/community-nominations" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                    See community nominations
+                  </Link>
+                )}
+              </Notice>
+            )}
             {submitted && (
               <p className="auth-form__success" role="status">
                 Thanks — your nomination has been submitted for review.
@@ -88,7 +119,7 @@ export default function NominatePage() {
                 <div className="auth-form__input-wrap auth-form__input-wrap--select">
                   <Award size={16} />
                   <select id="nominee-category" value={form.category} onChange={update('category')}>
-                    {CATEGORIES.map((c) => (
+                    {categoryNames.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
@@ -142,8 +173,8 @@ export default function NominatePage() {
                 {errors.reason && <span className="auth-form__error">{errors.reason}</span>}
               </div>
 
-              <button type="submit" className="btn btn--gold auth-form__submit">
-                Submit Nomination
+              <button type="submit" className="btn btn--gold auth-form__submit" disabled={loading}>
+                {loading ? 'Submitting…' : 'Submit Nomination'}
               </button>
             </form>
           </div>
