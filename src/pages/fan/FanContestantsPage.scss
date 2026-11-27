@@ -188,4 +188,93 @@
 
     button:disabled { opacity: 0.7; cursor: default; }
   }
+
+  &__muted {
+    font-size: 0.75rem;
+    color: $color-text-faint;
+  }
+
+  &__posts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  &__post {
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    padding: 12px 14px;
+  }
+
+  &__post-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: $color-white;
+  }
+
+  &__post-body {
+    font-size: 0.82rem;
+    color: $color-text-muted;
+    line-height: 1.5;
+    margin: 6px 0 8px;
+    white-space: pre-line;
+  }
+
+  &__post-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    font-size: 0.78rem;
+    color: $color-text-faint;
+    margin-bottom: 6px;
+
+    button,
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: inherit;
+      padding: 0;
+    }
+
+    button { cursor: pointer; }
+    button.is-active { color: #e0556b; }
+  }
+
+  &__comment {
+    font-size: 0.78rem;
+    color: $color-text-muted;
+    margin-top: 4px;
+
+    strong { color: $color-white; }
+  }
+
+  &__comment-form {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+
+    input {
+      flex: 1;
+      background: $color-bg-panel;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      color: $color-text;
+      padding: 7px 10px;
+      font-size: 0.8rem;
+    }
+
+    button {
+      background: $color-gold;
+      border: none;
+      border-radius: $radius-sm;
+      color: #1a1400;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+  }
 }

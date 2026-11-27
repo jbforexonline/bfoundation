@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { HandHeart, Plus, Equal } from 'lucide-react';
 import './GiveBack.scss';
 
@@ -34,9 +35,9 @@ export default function GiveBack() {
           </div>
         </div>
 
-        <button type="button" className="btn btn--gold give-back__cta">
+        <Link to="/about" className="btn btn--gold give-back__cta">
           Learn More
-        </button>
+        </Link>
       </div>
     </section>
   );

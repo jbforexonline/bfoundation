@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Search, Vote, ChevronDown, Instagram, Link2, BadgeCheck, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Vote, ChevronDown, Instagram, Link2, BadgeCheck, Check, Heart, MessageCircle, Send } from 'lucide-react';
 import Notice from '../../components/ui/Notice';
 import useApi from '../../hooks/useApi';
-import { api } from '../../api/client';
+import { api, timeAgo } from '../../api/client';
 import '../../components/dashboard/DashboardPage.scss';
 import './FanContestantsPage.scss';
 
@@ -13,9 +14,91 @@ function initials(name) {
 const instagramUrl = (handle) => `https://instagram.com/${handle.replace(/^@/, '')}`;
 const webUrl = (url) => (/^https?:\/\//i.test(url) ? url : `https://${url}`);
 
-// Real contestants from the backend. Fans can read full profiles and use their free vote
-// (one per category). Fans see the level badge, never the exact vote count.
+// A contestant's campaign posts: fans react with a heart and comment.
+function Posts({ contestantId }) {
+  const [posts, setPosts] = useState(null);
+  const [drafts, setDrafts] = useState({});
+  const [error, setError] = useState('');
+
+  const load = () =>
+    api(`/contestants/${contestantId}/posts`, { query: { limit: 3 } })
+      .then((d) => setPosts(d.posts))
+      .catch((err) => setError(err.message));
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contestantId]);
+
+  const toggleReaction = async (p) => {
+    try {
+      const d = await api(`/posts/${p.id}/reactions`, { method: p.reactedByMe ? 'DELETE' : 'POST' });
+      setPosts((list) => list.map((x) => (x.id === p.id ? { ...x, ...d } : x)));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+  const comment = async (e, p) => {
+    e.preventDefault();
+    const body = (drafts[p.id] ?? '').trim();
+    if (!body) return;
+    try {
+      await api(`/posts/${p.id}/comments`, { method: 'POST', body: { body } });
+      setDrafts((d) => ({ ...d, [p.id]: '' }));
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (!posts) return null;
+  return (
+    <div className="fan-contestants__posts">
+      <Notice tone="error">{error}</Notice>
+      {posts.length === 0 ? (
+        <p className="fan-contestants__muted">No campaign updates yet.</p>
+      ) : (
+        posts.map((p) => (
+          <div className="fan-contestants__post" key={p.id}>
+            <p className="fan-contestants__post-title">{p.title}</p>
+            <p className="fan-contestants__muted">{timeAgo(p.createdAt)}</p>
+            <p className="fan-contestants__post-body">{p.body}</p>
+            <div className="fan-contestants__post-actions">
+              <button type="button" className={p.reactedByMe ? 'is-active' : ''} onClick={() => toggleReaction(p)}>
+                <Heart size={14} fill={p.reactedByMe ? 'currentColor' : 'none'} /> {p.reactions}
+              </button>
+              <span>
+                <MessageCircle size={14} /> {p.comments}
+              </span>
+            </div>
+            {p.latestComments.map((c) => (
+              <p className="fan-contestants__comment" key={c.id}>
+                <strong>{c.mine ? 'You' : c.author}:</strong> {c.body}
+              </p>
+            ))}
+            <form className="fan-contestants__comment-form" onSubmit={(e) => comment(e, p)}>
+              <input
+                type="text"
+                placeholder="Write a comment…"
+                maxLength={1000}
+                value={drafts[p.id] ?? ''}
+                onChange={(e) => setDrafts((d) => ({ ...d, [p.id]: e.target.value }))}
+              />
+              <button type="submit" aria-label="Post comment">
+                <Send size={14} />
+              </button>
+            </form>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+// Real contestants from the backend. Fans can read full profiles, follow, message, react to posts
+// and use their free vote (one per category). Fans see the level badge, never the exact vote count.
 export default function FanContestantsPage() {
+  const navigate = useNavigate();
+  const [favorites, setFavorites] = useState(new Set());
   const [query, setQuery] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); // category slug
@@ -42,6 +125,9 @@ export default function FanContestantsPage() {
   const contestants = data?.contestants ?? [];
 
   useEffect(() => {
+    api('/favorites/ids')
+      .then((d) => setFavorites(new Set(d.ids)))
+      .catch(() => {});
     api('/votes/free-status')
       .then((d) =>
         setBallot(Object.fromEntries(d.categories.filter((c) => c.votedFor).map((c) => [c.category.slug, c.votedFor.id])))
@@ -59,6 +145,22 @@ export default function FanContestantsPage() {
       } catch {
         /* the summary is still shown */
       }
+    }
+  };
+
+  const toggleFavorite = async (c) => {
+    setNotice(null);
+    const on = favorites.has(c.id);
+    try {
+      await api(`/favorites/${c.id}`, { method: on ? 'DELETE' : 'POST' });
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        if (on) next.delete(c.id);
+        else next.add(c.id);
+        return next;
+      });
+    } catch (err) {
+      setNotice({ tone: 'error', text: err.message });
     }
   };
 
@@ -137,6 +239,7 @@ export default function FanContestantsPage() {
                       {c.officialNominee ? ' · Official Nominee' : ''}
                     </span>
                   </span>
+                  {favorites.has(c.id) && <Heart size={15} fill="#f0a93a" color="#f0a93a" aria-label="In your favorites" />}
                   <ChevronDown size={18} className="fan-contestants__chevron" />
                 </button>
 
@@ -169,7 +272,20 @@ export default function FanContestantsPage() {
                       </div>
                     )}
 
+                    <Posts contestantId={c.id} />
+
                     <div className="fan-contestants__actions">
+                      <button type="button" className="btn btn--outline" onClick={() => toggleFavorite(c)}>
+                        <Heart size={15} fill={favorites.has(c.id) ? 'currentColor' : 'none'} />
+                        {favorites.has(c.id) ? 'In favorites' : 'Add to favorites'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--outline"
+                        onClick={() => navigate('/dashboard/fan/messages', { state: { contestantId: c.id } })}
+                      >
+                        <MessageCircle size={15} /> Message
+                      </button>
                       {votedFor === c.id ? (
                         <button type="button" className="btn btn--outline" disabled>
                           <Check size={15} /> You voted for {c.name.split(' ')[0]}

@@ -53,7 +53,19 @@ export default function SignUp({ onSwitchMode, onClose, onSignedUp }) {
     setLoading(true);
     try {
       // Creates a fan account (logged in straight away) and emails a verification link.
-      await register({ ...form, email: form.email.trim() });
+      // Invite link (?ref=CODE) saved by App.jsx: the friend who invited us gets bonus votes.
+      let referralCode;
+      try {
+        referralCode = localStorage.getItem('bf_ref') || undefined;
+      } catch {
+        referralCode = undefined;
+      }
+      await register({ ...form, email: form.email.trim(), referralCode });
+      try {
+        localStorage.removeItem('bf_ref');
+      } catch {
+        /* ignore */
+      }
       setSubmitted(true);
       const email = form.email.trim();
       setTimeout(() => onSignedUp?.(email), 900);

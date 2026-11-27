@@ -41,15 +41,15 @@ const NAV_GROUPS = [
   },
   {
     items: [
-      { label: 'Notifications', to: '/dashboard/contestant/notifications', icon: Bell },
-      { label: 'Messages', to: '/dashboard/contestant/messages', icon: MessageCircle },
+      { label: 'Notifications', to: '/dashboard/contestant/notifications', icon: Bell, badge: 'notifications' },
+      { label: 'Messages', to: '/dashboard/contestant/messages', icon: MessageCircle, badge: 'messages' },
     ],
   },
 ];
 
 export default function ContestantLayout() {
   return (
-    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Contestant">
+    <DashboardLayout navGroups={NAV_GROUPS} roleLabel="Contestant" notificationsPath="/dashboard/contestant/notifications">
       <Outlet />
     </DashboardLayout>
   );

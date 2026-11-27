@@ -54,6 +54,11 @@
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #3a3226 transparent;
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-thumb { background: #3a3226; border-radius: 3px; }
   }
 
   &__nav-group {
@@ -148,6 +153,47 @@
     gap: 12px;
   }
 
+  // Notification bell (fan / contestant): pushed to the right, next to the profile.
+  &__bell {
+    margin-left: auto;
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-text-muted;
+    border: 1px solid $color-border;
+    transition: color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      color: $color-gold;
+      border-color: $color-gold;
+    }
+  }
+
+  &__bell-count,
+  &__nav-badge {
+    background: #d13b3b;
+    color: #fff;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 999px;
+    padding: 3px 6px;
+  }
+
+  &__bell-count {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+  }
+
+  &__nav-badge {
+    margin-left: auto;
+  }
+
   &__profile-text {
     text-align: right;
   }
@@ -184,7 +230,10 @@
     font-family: $font-heading;
     font-weight: 700;
     font-size: 0.8rem;
+    overflow: hidden;
     flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
   }
 
   &__content {

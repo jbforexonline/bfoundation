@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Trophy, Users2, Star, Sun, Heart } from 'lucide-react';
 import HallOfFame from './HallOfFame';
 import RwandaHighlight from './RwandaHighlight';
@@ -27,20 +28,20 @@ export default function Hero() {
           </p>
 
           <div className="hero__buttons">
-            <button className="btn btn--outline hero__vote-btn" type="button">
+            <Link to="/vote" className="btn btn--outline hero__vote-btn">
               <Trophy size={18} />
               <span>
                 Vote Now
                 <small>Support Your Favorite</small>
               </span>
-            </button>
-            <button className="btn btn--outline hero__nominate-btn" type="button">
+            </Link>
+            <Link to="/nominate" className="btn btn--outline hero__nominate-btn">
               <Users2 size={18} />
               <span>
                 Nominate Someone
                 <small>Recognize a Talent</small>
               </span>
-            </button>
+            </Link>
           </div>
 
           <ul className="hero__pillars">

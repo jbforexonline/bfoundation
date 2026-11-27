@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Mail, Phone, Globe, Vote, Ticket, Megaphone, Lock } from 'lucide-react';
+import { User, Mail, Phone, Globe, Vote, Ticket, Megaphone, Lock, Calendar, MapPin, Users, Gift, Copy, Check } from 'lucide-react';
 import StatCard from '../../components/ui/StatCard';
 import Field from '../../components/ui/Field';
 import Notice from '../../components/ui/Notice';
@@ -10,6 +10,51 @@ import '../../components/dashboard/DashboardPage.scss';
 import '../../components/auth/AuthForm.scss';
 
 const COUNTRIES = ['Rwanda', 'Burundi', 'Uganda', 'Kenya', 'Tanzania'];
+const PROVINCES = ['Kigali', 'Northern', 'Southern', 'Eastern', 'Western', 'Outside Rwanda'];
+const GENDERS = [
+  ['', 'Prefer not to say'],
+  ['FEMALE', 'Female'],
+  ['MALE', 'Male'],
+  ['OTHER', 'Other'],
+];
+
+// "Invite friends": the fan's referral link and the bonus votes it earned.
+function InviteFriends() {
+  const { data, error } = useApi('/referrals/me');
+  const [copied, setCopied] = useState(false);
+  if (error) return <Notice tone="error">{error.message}</Notice>;
+  if (!data) return null;
+  const copy = () => {
+    navigator.clipboard?.writeText(data.link).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div style={{ marginTop: 32 }}>
+      <h2 className="dash-page__section-title">Invite friends</h2>
+      <p style={{ color: '#a8a49b', fontSize: '0.85rem', marginBottom: 12, maxWidth: 560 }}>
+        Share your link. When a friend signs up and verifies their email
+        {data.rewardVotes > 0 ? `, you get ${data.rewardVotes} bonus votes to use on the Vote page` : ''}.
+      </p>
+      <div style={{ display: 'flex', gap: 8, maxWidth: 560, flexWrap: 'wrap' }}>
+        <input
+          readOnly
+          value={data.link}
+          onFocus={(e) => e.target.select()}
+          style={{ flex: 1, minWidth: 220, background: '#16130d', border: '1px solid #2e2a22', borderRadius: 8, color: '#e9e6df', padding: '10px 12px' }}
+        />
+        <button type="button" className="btn btn--gold" onClick={copy}>
+          {copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'Copied' : 'Copy link'}
+        </button>
+      </div>
+      <div className="dash-page__stats" style={{ marginTop: 16 }}>
+        <StatCard icon={Users} label="Friends invited" value={data.invited} sub={`${data.joined} verified`} />
+        <StatCard icon={Gift} label="Bonus votes earned" value={data.votesEarned} />
+        <StatCard icon={Vote} label="Bonus votes left" value={data.voteBalance} sub="Use them on the Vote page" />
+      </div>
+    </div>
+  );
+}
 
 export default function FanProfilePage() {
   const { user, setCurrentUser } = useAuth();
@@ -17,7 +62,7 @@ export default function FanProfilePage() {
   const tickets = useApi('/tickets', { limit: 1 });
   const supports = useApi('/nominations/support-history', { limit: 1 });
 
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', country: 'Rwanda' });
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', country: 'Rwanda', gender: '', birthYear: '', province: '' });
   const [errors, setErrors] = useState({});
   const [notice, setNotice] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -26,7 +71,17 @@ export default function FanProfilePage() {
   const [pwNotice, setPwNotice] = useState(null);
 
   useEffect(() => {
-    if (user) setForm({ fullName: user.name ?? '', email: user.email ?? '', phone: user.phone ?? '', country: user.country ?? 'Rwanda' });
+    if (user) {
+      setForm({
+        fullName: user.name ?? '',
+        email: user.email ?? '',
+        phone: user.phone ?? '',
+        country: user.country ?? 'Rwanda',
+        gender: user.gender ?? '',
+        birthYear: user.birthYear ?? '',
+        province: user.province ?? '',
+      });
+    }
   }, [user]);
 
   const update = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -37,7 +92,10 @@ export default function FanProfilePage() {
     setErrors({});
     setNotice(null);
     try {
-      const data = await api('/users/me', { method: 'PATCH', body: { ...form, phone: form.phone || undefined } });
+      const data = await api('/users/me', {
+        method: 'PATCH',
+        body: { ...form, phone: form.phone || undefined, gender: form.gender || null, province: form.province || null, birthYear: form.birthYear || null },
+      });
       setCurrentUser(data.user);
       setNotice({ tone: 'success', text: data._message });
     } catch (err) {
@@ -123,11 +181,40 @@ export default function FanProfilePage() {
               </select>
             </Field>
           </div>
+          <p style={{ color: '#a8a49b', fontSize: '0.8rem', margin: '4px 0 0' }}>
+            Optional — only used anonymously (as percentages) to show contestants who supports them.
+          </p>
+          <div className="auth-form__row">
+            <Field id="fan-gender" label="Gender" icon={User} error={errors.gender} select>
+              <select id="fan-gender" value={form.gender} onChange={update('gender')}>
+                {GENDERS.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field id="fan-birth" label="Year of birth" icon={Calendar} error={errors.birthYear}>
+              <input id="fan-birth" type="number" inputMode="numeric" placeholder="e.g. 2001" value={form.birthYear} onChange={update('birthYear')} />
+            </Field>
+          </div>
+          <Field id="fan-province" label="Where you live" icon={MapPin} error={errors.province} select>
+            <select id="fan-province" value={form.province} onChange={update('province')}>
+              <option value="">Prefer not to say</option>
+              {PROVINCES.map((p) => (
+                <option key={p} value={p}>
+                  {p === 'Outside Rwanda' ? p : `${p}${p === 'Kigali' ? ' City' : ' Province'}`}
+                </option>
+              ))}
+            </select>
+          </Field>
           <button type="submit" className="btn btn--gold" style={{ alignSelf: 'flex-start', padding: '10px 24px' }} disabled={saving}>
             {saving ? 'Saving…' : 'Save Changes'}
           </button>
         </form>
       </div>
+
+      <InviteFriends />
 
       {user?.hasPassword && (
         <div style={{ marginTop: 32 }}>

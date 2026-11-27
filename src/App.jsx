@@ -22,6 +22,38 @@ export default function App() {
     if (wantsLogin) setAuthModal({ isOpen: true, mode: 'login' });
   }, [wantsLogin]);
 
+  // ?ref=CODE (a fan's invite link) is kept until sign-up; ?newsletter= comes back from the email links.
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    let changed = false;
+    const ref = params.get('ref');
+    if (ref) {
+      try {
+        localStorage.setItem('bf_ref', ref);
+      } catch {
+        /* ignore */
+      }
+      setBanner({ tone: 'info', text: 'A friend invited you to BFOUNDATION.RW. Sign up to vote for your favorite talent!' });
+      setAuthModal({ isOpen: true, mode: 'signup' });
+      next.delete('ref');
+      changed = true;
+    }
+    const newsletter = params.get('newsletter');
+    if (newsletter) {
+      const texts = {
+        confirmed: ['success', 'You are subscribed to the BFOUNDATION.RW newsletter. Thank you!'],
+        unsubscribed: ['info', 'You have been unsubscribed from the newsletter.'],
+        invalid: ['error', 'This newsletter link is invalid or has expired.'],
+      };
+      const [tone, text] = texts[newsletter] ?? texts.invalid;
+      setBanner({ tone, text });
+      next.delete('newsletter');
+      changed = true;
+    }
+    if (changed) setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const verified = params.get('emailVerified');
     if (verified) {

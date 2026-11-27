@@ -25,8 +25,13 @@ npm run dev
   (see `Dockerfile` and `docker-compose.yml`). Rebuild after changing it.
 - The backend must allow this site's address in its `FRONTEND_URL` (CORS), e.g.
   `FRONTEND_URL=https://bfoundation.rw,http://localhost:5173`.
-- API code lives in `src/api/client.js` (base URL, tokens, automatic token refresh, error messages),
-  `src/auth/` (`AuthContext` = who is logged in, `RequireRole` = dashboard protection) and `src/hooks/useApi.js`.
+- API code lives in `src/api/client.js` (base URL, tokens, automatic token refresh, error messages,
+  file downloads, page-view tracking), `src/auth/` (`AuthContext` = who is logged in, `RequireRole` = dashboard
+  protection), `src/hooks/useApi.js` and `src/hooks/useUnread.js` (notification / message badges).
+
+**What is connected:** every page except the payment screens (Fan → Vote checkout and Purchased Votes,
+Admin → Payments), which stay as previews until Paypack payments are switched on. Contestants never see
+exact vote counts: their analytics show levels, ranks and percentages (only admins see real numbers).
 
 To build for production:
 
@@ -93,41 +98,29 @@ Every page in the header — plus everything reachable from the new **Explore BF
 
 ### Fan Dashboard
 
-`/dashboard/fan/*` is a separate sidebar-driven layout (`pages/fan/FanLayout.jsx` + shared `components/dashboard/DashboardLayout.jsx`):
+`/dashboard/fan/*` (`pages/fan/FanLayout.jsx` + shared `components/dashboard/DashboardLayout.jsx`, with a notification bell):
 
-| Sidebar item | Route |
-|---|---|
-| Profile | `/dashboard/fan/profile` |
-| Contestants | `/dashboard/fan/contestants` |
-| Messages | `/dashboard/fan/messages` |
-| Vote History | `/dashboard/fan/vote-history` |
-| Purchased Votes | `/dashboard/fan/purchased-votes` |
-| Favorite Contestants | `/dashboard/fan/favorites` |
-| Notifications | `/dashboard/fan/notifications` |
-| Event Tickets | `/dashboard/fan/event-tickets` |
-
-- **Contestants** is a searchable, filterable list where each row expands in place into the contestant's full profile (bio, gallery, links) with **Message** and **Vote Now** actions.
-- **Message** opens `/dashboard/fan/messages` (built on the shared `components/messaging/MessagingPanel.jsx`) with that contestant's thread pre-selected.
-- **Vote Now** opens `/dashboard/fan/vote` (`FanVoteCheckoutPage.jsx`) — the paid-votes flow: a votes/price table (1 → 2,000 RWF, 10 → 20,000 RWF, 50 → 90,000 RWF, 100 → 180,000 RWF, 500 → 800,000 RWF) plus a Mobile Money / Cards / International Payments method switch, each with its own fields. Submitting shows a success screen — no real payment gateway is wired up (see the `// TODO` in that file).
-
-You reach the dashboard by logging in or completing sign-up (both redirect there), or directly via the "Fan Dashboard (demo)" link in the footer.
+| Sidebar item | Route | What it does |
+|---|---|---|
+| Profile | `/dashboard/fan/profile` | Account details, optional gender / birth year / province, invite-friends link (bonus votes), password |
+| Contestants | `/dashboard/fan/contestants` | Real contestants: profile, photos, posts (❤️ + comments), favorite, message, free vote |
+| Messages | `/dashboard/fan/messages` | Private chat with contestants (`components/messaging/MessagingPanel.jsx`) |
+| Vote History | `/dashboard/fan/vote-history` | Votes cast |
+| Purchased Votes | `/dashboard/fan/purchased-votes` | Preview (payments not switched on) |
+| Favorite Contestants | `/dashboard/fan/favorites` | Followed contestants |
+| My Nominations | `/dashboard/fan/nominations` | Nominations submitted and supported |
+| Notifications | `/dashboard/fan/notifications` | In-app notifications (`components/dashboard/NotificationsList.jsx`) |
+| Event Tickets | `/dashboard/fan/event-tickets` | Tickets with QR codes |
 
 ### Admin Dashboard
 
-`/dashboard/admin/*` uses the same `AdminLayout.jsx` + shared `DashboardLayout.jsx` pattern:
+`/dashboard/admin/*` (`AdminLayout.jsx`). Moderators see the same pages but can't create, approve or delete, and don't see Security.
 
 | Sidebar item | Route |
 |---|---|
-| Contestants | `/dashboard/admin/contestants` |
-| Categories | `/dashboard/admin/categories` |
-| Votes | `/dashboard/admin/votes` |
-| Payments | `/dashboard/admin/payments` |
-| Events | `/dashboard/admin/events` |
-| Sponsors | `/dashboard/admin/sponsors` |
-| Applications | `/dashboard/admin/applications` |
-| Analytics | `/dashboard/admin/analytics` |
-
-Categories, Votes, Payments, Sponsors, and Events each have an **"+ Add"** button that opens a shared `components/ui/Modal.jsx` with a small form; submitting prepends a new row to that page's table (client-side state only — see the `// TODO` in each page for where the real "create" endpoint goes). Contestants and Applications keep their approve/suspend/reject actions. Analytics uses real `chart.js` charts via `react-chartjs-2` (`components/ui/ChartCard.jsx`). Reach it via the "Admin Dashboard (demo)" link in the footer.
+| Contestants · Applications · Nominations · Categories · Votes · Hall of Fame | `/dashboard/admin/contestants`, `…/applications`, `…/nominations`, `…/categories`, `…/votes`, `…/hall-of-fame` |
+| Events · Sponsors · Payments (preview) · Analytics | `…/events`, `…/sponsors`, `…/payments`, `…/analytics` |
+| Users · Inbox & Newsletter · Security | `…/users`, `…/inbox`, `…/security` |
 
 ### Contestant Dashboard
 
@@ -151,13 +144,13 @@ Categories, Votes, Payments, Sponsors, and Events each have an **"+ Add"** butto
 | (ungrouped) | Notifications | `/dashboard/contestant/notifications` |
 | | Messages | `/dashboard/contestant/messages` |
 
-Highlights:
-- **Media Gallery** is a real (client-side) photo upload — pick one or more image files, they render immediately via `FileReader`, and you can set any photo as the cover or remove it. Nothing is uploaded to a server yet (see the `// TODO`).
-- **Messages** uses the same `MessagingPanel` as the Fan dashboard, showing fans as contacts instead of contestants.
-- **Share & Promote** opens real share intents (WhatsApp/Facebook/X) for the contestant's voting link.
-- Vote Overview / Growth / Ranking / Performance and Demographics/Engagement reuse `StatCard`, `ChartCard`, and `DataTable`.
-
-Reach it via the "Contestant Dashboard (demo)" link in the footer.
+Highlights (all connected to the API):
+- **Public Profile / Media Gallery**: bio, links, photos uploaded to the server (first photo = cover).
+- **Voting Page / Share & Promote / Promotional Materials**: the voting link `/vote?contestant=<id>`, its QR code,
+  share buttons (clicks and shares are counted), and six downloadable SVG graphics with name, photo and QR.
+- **Analytics and Supporter Insights**: levels, ranks, percentages and ranges only, never exact vote counts.
+- **Posts**: updates that followers are notified about; fans react and comment.
+- **Messages / Notifications**: same components as the fan dashboard.
 
 ### Choosing a dashboard at login
 

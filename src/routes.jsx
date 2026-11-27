@@ -27,6 +27,7 @@ import FanFavoritesPage from './pages/fan/FanFavoritesPage';
 import FanNotificationsPage from './pages/fan/FanNotificationsPage';
 import FanEventTicketsPage from './pages/fan/FanEventTicketsPage';
 import FanVoteCheckoutPage from './pages/fan/FanVoteCheckoutPage';
+import FanNominationsPage from './pages/fan/FanNominationsPage';
 
 // Admin Dashboard
 import AdminLayout from './pages/admin/AdminLayout';
@@ -38,6 +39,11 @@ import AdminEventsPage from './pages/admin/AdminEventsPage';
 import AdminSponsorsPage from './pages/admin/AdminSponsorsPage';
 import AdminApplicationsPage from './pages/admin/AdminApplicationsPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
+import AdminNominationsPage from './pages/admin/AdminNominationsPage';
+import AdminHallOfFamePage from './pages/admin/AdminHallOfFamePage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminInboxPage from './pages/admin/AdminInboxPage';
+import AdminSecurityPage from './pages/admin/AdminSecurityPage';
 
 // Contestant Dashboard
 import ContestantLayout from './pages/contestant/ContestantLayout';
@@ -110,6 +116,7 @@ const routes = [
       { path: 'favorites', element: <FanFavoritesPage /> },
       { path: 'notifications', element: <FanNotificationsPage /> },
       { path: 'event-tickets', element: <FanEventTicketsPage /> },
+      { path: 'nominations', element: <FanNominationsPage /> },
     ],
   },
 
@@ -131,6 +138,11 @@ const routes = [
       { path: 'sponsors', element: <AdminSponsorsPage /> },
       { path: 'applications', element: <AdminApplicationsPage /> },
       { path: 'analytics', element: <AdminAnalyticsPage /> },
+      { path: 'nominations', element: <AdminNominationsPage /> },
+      { path: 'hall-of-fame', element: <AdminHallOfFamePage /> },
+      { path: 'users', element: <AdminUsersPage /> },
+      { path: 'inbox', element: <AdminInboxPage /> },
+      { path: 'security', element: <AdminSecurityPage /> },
     ],
   },
 

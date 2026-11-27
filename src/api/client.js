@@ -113,3 +113,66 @@ export const formatDate = (d, opts = { year: 'numeric', month: 'short', day: 'nu
 export const formatDateTime = (d) =>
   d ? new Date(d).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 export const titleCase = (s) => (s ? s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, ' ') : '');
+
+// "5 minutes ago", "Yesterday", "Mar 4"
+export function timeAgo(d) {
+  if (!d) return '';
+  const diff = (Date.now() - new Date(d).getTime()) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hour${diff < 7200 ? '' : 's'} ago`;
+  if (diff < 172800) return 'Yesterday';
+  if (diff < 7 * 86400) return `${Math.floor(diff / 86400)} days ago`;
+  return formatDate(d);
+}
+
+export const initialsOf = (name = '') =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+// 1234 → "1,234"
+export const formatNumber = (n) => Number(n || 0).toLocaleString('en-US');
+
+// Downloads a protected file (e.g. promo graphics) with the user's token, then saves it.
+export async function downloadFile(path, fallbackName = 'download') {
+  const send = () =>
+    fetch(`${API_URL}${path}`, { headers: { Authorization: `Bearer ${session.get()?.accessToken ?? ''}` } });
+  let res = await send();
+  if (res.status === 401) {
+    await refreshTokens();
+    res = await send();
+  }
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null));
+  const name = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ?? fallbackName;
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Website traffic for the admin Analytics page. Fire-and-forget; never breaks navigation.
+export function trackPageView(path) {
+  try {
+    let sid = sessionStorage.getItem('bf_sid');
+    if (!sid) {
+      sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem('bf_sid', sid);
+    }
+    const token = session.get()?.accessToken;
+    fetch(`${API_URL}/analytics/pageview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ path, sessionId: sid, referrer: document.referrer || undefined }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* ignore */
+  }
+}

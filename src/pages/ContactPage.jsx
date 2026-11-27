@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { User, Mail, MessageSquare, MapPin, Phone, Clock } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import Notice from '../components/ui/Notice';
+import { api } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import '../components/auth/AuthForm.scss';
 import './ContactPage.scss';
 
@@ -14,9 +17,12 @@ const INFO = [
 ];
 
 export default function ContactPage() {
-  const [form, setForm] = useState(INITIAL_FORM);
+  const { user: me } = useAuth();
+  const [form, setForm] = useState(() => ({ ...INITIAL_FORM, name: me?.name ?? '', email: me?.email ?? '' }));
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [sending, setSending] = useState(false);
 
   const update = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -34,15 +40,23 @@ export default function ContactPage() {
     return next;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const next = validate();
     setErrors(next);
-    if (Object.keys(next).length === 0) {
-      // TODO: wire up to your real contact/support endpoint.
-      console.log('Contact message', form);
+    setApiError('');
+    setSubmitted(false);
+    if (Object.keys(next).length > 0) return;
+    setSending(true);
+    try {
+      await api('/contact', { method: 'POST', body: form });
       setSubmitted(true);
-      setForm(INITIAL_FORM);
+      setForm({ ...INITIAL_FORM, name: me?.name ?? '', email: me?.email ?? '' });
+    } catch (err) {
+      setErrors(err.fieldErrors ?? {});
+      setApiError(err.message);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -57,6 +71,7 @@ export default function ContactPage() {
       <section className="contact-page section">
         <div className="contact-page__inner">
           <div className="contact-page__form-card">
+            <Notice tone="error">{apiError}</Notice>
             {submitted && (
               <p className="auth-form__success" role="status">
                 Message sent — we&rsquo;ll reply within 2 business days.
@@ -126,8 +141,8 @@ export default function ContactPage() {
                 {errors.message && <span className="auth-form__error">{errors.message}</span>}
               </div>
 
-              <button type="submit" className="btn btn--gold auth-form__submit">
-                Send Message
+              <button type="submit" className="btn btn--gold auth-form__submit" disabled={sending}>
+                {sending ? 'Sending…' : 'Send Message'}
               </button>
             </form>
           </div>
