@@ -4,6 +4,7 @@ import { Search, Vote, ChevronDown, Instagram, Link2, BadgeCheck, Check, Heart, 
 import Notice from '../../components/ui/Notice';
 import useApi from '../../hooks/useApi';
 import { api, timeAgo } from '../../api/client';
+import { usePaymentConfig } from '../../api/payments';
 import '../../components/dashboard/DashboardPage.scss';
 import './FanContestantsPage.scss';
 
@@ -98,6 +99,7 @@ function Posts({ contestantId }) {
 // and use their free vote (one per category). Fans see the level badge, never the exact vote count.
 export default function FanContestantsPage() {
   const navigate = useNavigate();
+  const payConfig = usePaymentConfig();
   const [favorites, setFavorites] = useState(new Set());
   const [query, setQuery] = useState('');
   const [search, setSearch] = useState('');
@@ -286,6 +288,11 @@ export default function FanContestantsPage() {
                       >
                         <MessageCircle size={15} /> Message
                       </button>
+                      {payConfig?.enabled && (
+                        <button type="button" className="btn btn--outline" onClick={() => navigate('/dashboard/fan/vote', { state: { contestant: c } })}>
+                          <Vote size={15} /> Buy votes
+                        </button>
+                      )}
                       {votedFor === c.id ? (
                         <button type="button" className="btn btn--outline" disabled>
                           <Check size={15} /> You voted for {c.name.split(' ')[0]}

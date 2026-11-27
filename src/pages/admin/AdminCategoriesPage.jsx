@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, CheckCircle2, Wallet, Ban, Plus, Award, FileText } from 'lucide-react';
+import { LayoutGrid, CheckCircle2, Wallet, Ban, Plus, Award, FileText, Calendar, Pencil } from 'lucide-react';
 import StatCard from '../../components/ui/StatCard';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
@@ -7,12 +7,17 @@ import Modal from '../../components/ui/Modal';
 import Field from '../../components/ui/Field';
 import Notice from '../../components/ui/Notice';
 import useApi from '../../hooks/useApi';
-import { api, formatRwf } from '../../api/client';
+import { api, formatDate, formatRwf } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import '../../components/dashboard/DashboardPage.scss';
 import '../../components/auth/AuthForm.scss';
 
-const EMPTY_FORM = { name: '', prize: '3,000,000 RWF', description: '' };
+const EMPTY_FORM = { name: '', prize: '3,000,000 RWF', description: '', startDate: '', endDate: '' };
+
+// Dates are picked as days in Kigali time: voting opens at 00:00 on the start day and closes at 23:59 on the end day.
+const toStart = (d) => (d ? `${d}T00:00:00+02:00` : null);
+const toEnd = (d) => (d ? `${d}T23:59:59+02:00` : null);
+const toInput = (iso) => (iso ? new Date(new Date(iso).getTime() + 2 * 3600 * 1000).toISOString().slice(0, 10) : '');
 
 const shortRwf = (n) => (n >= 1_000_000 ? `${Math.round((n / 1_000_000) * 10) / 10}M RWF` : formatRwf(n));
 
@@ -21,6 +26,7 @@ export default function AdminCategoriesPage() {
   const isAdmin = user?.role === 'ADMIN';
   const { data, error, loading, reload } = useApi('/admin/categories');
   const [isModalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null); // category being edited (null = adding)
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -39,18 +45,55 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const openForm = (category) => {
+    setEditing(category ?? null);
+    setForm(
+      category
+        ? {
+            name: category.name,
+            prize: String(category.prizeAmount),
+            description: category.description ?? '',
+            startDate: toInput(category.startDate),
+            endDate: toInput(category.endDate),
+          }
+        : EMPTY_FORM
+    );
+    setErrors({});
+    setFormError('');
+    setModalOpen(true);
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     setErrors({});
     setFormError('');
     try {
-      await api('/admin/categories', {
-        method: 'POST',
-        body: { name: form.name, prizeAmount: form.prize, description: form.description || undefined },
-      });
+      if (editing) {
+        await api(`/admin/categories/${editing.id}`, {
+          method: 'PATCH',
+          body: {
+            name: form.name,
+            prizeAmount: form.prize,
+            description: form.description || null,
+            startDate: toStart(form.startDate),
+            endDate: toEnd(form.endDate),
+          },
+        });
+      } else {
+        await api('/admin/categories', {
+          method: 'POST',
+          body: {
+            name: form.name,
+            prizeAmount: form.prize,
+            description: form.description || undefined,
+            startDate: toStart(form.startDate) ?? undefined,
+            endDate: toEnd(form.endDate) ?? undefined,
+          },
+        });
+      }
       setModalOpen(false);
       setForm(EMPTY_FORM);
-      setNotice({ tone: 'success', text: `Category "${form.name}" created.` });
+      setNotice({ tone: 'success', text: editing ? `Category "${form.name}" updated.` : `Category "${form.name}" created.` });
       reload();
     } catch (err) {
       setErrors(err.fieldErrors);
@@ -64,6 +107,8 @@ export default function AdminCategoriesPage() {
     contestants: c.contestantCount,
     prize: formatRwf(c.prizeAmount),
     isActive: c.isActive,
+    window: c.startDate || c.endDate ? `${c.startDate ? formatDate(c.startDate) : '…'} → ${c.endDate ? formatDate(c.endDate) : '…'}` : 'Not set',
+    raw: c,
   }));
   const stats = data?.stats;
 
@@ -75,7 +120,7 @@ export default function AdminCategoriesPage() {
           <p className="dash-page__subtitle">Manage the award categories running on the platform.</p>
         </div>
         {isAdmin && (
-          <button type="button" className="btn btn--gold" onClick={() => setModalOpen(true)}>
+          <button type="button" className="btn btn--gold" onClick={() => openForm(null)}>
             <Plus size={16} /> Add Category
           </button>
         )}
@@ -96,6 +141,7 @@ export default function AdminCategoriesPage() {
           { key: 'name', label: 'Category' },
           { key: 'contestants', label: 'Contestants' },
           { key: 'prize', label: 'Prize' },
+          { key: 'window', label: 'Voting dates' },
           {
             key: 'status',
             label: 'Status',
@@ -107,6 +153,10 @@ export default function AdminCategoriesPage() {
                   key: 'actions',
                   label: 'Actions',
                   render: (row) => (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" className="btn btn--outline" style={{ padding: '6px 10px', fontSize: '0.78rem' }} onClick={() => openForm(row.raw)} aria-label={`Edit ${row.name}`}>
+                      <Pencil size={14} />
+                    </button>
                     <button
                       type="button"
                       className={`btn ${row.isActive ? 'btn--outline' : 'btn--gold'}`}
@@ -123,6 +173,7 @@ export default function AdminCategoriesPage() {
                         </>
                       )}
                     </button>
+                    </div>
                   ),
                 },
               ]
@@ -131,7 +182,7 @@ export default function AdminCategoriesPage() {
         rows={rows}
       />
 
-      <Modal isOpen={isModalOpen} title="Add Category" onClose={() => setModalOpen(false)}>
+      <Modal isOpen={isModalOpen} title={editing ? `Edit ${editing.name}` : 'Add Category'} onClose={() => setModalOpen(false)}>
         <Notice tone="error">{formError}</Notice>
         <form className="auth-form" onSubmit={handleAdd} noValidate>
           <Field id="cat-name" label="Category name" icon={Award} error={errors.name}>
@@ -143,8 +194,19 @@ export default function AdminCategoriesPage() {
           <Field id="cat-desc" label="Short description (optional)" icon={FileText} error={errors.description}>
             <input id="cat-desc" type="text" value={form.description} onChange={update('description')} />
           </Field>
+          <div className="auth-form__row">
+            <Field id="cat-start" label="Voting opens (optional)" icon={Calendar} error={errors.startDate}>
+              <input id="cat-start" type="date" value={form.startDate} onChange={update('startDate')} />
+            </Field>
+            <Field id="cat-end" label="Voting closes (optional)" icon={Calendar} error={errors.endDate}>
+              <input id="cat-end" type="date" value={form.endDate} onChange={update('endDate')} />
+            </Field>
+          </div>
+          <p style={{ color: '#a8a49b', fontSize: '0.8rem' }}>
+            The closing date drives the “Voting ends in” countdown on the home page. Free votes are one per category per voting period.
+          </p>
           <button type="submit" className="btn btn--gold auth-form__submit">
-            Add Category
+            {editing ? 'Save Changes' : 'Add Category'}
           </button>
         </form>
       </Modal>

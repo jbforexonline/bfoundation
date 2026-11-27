@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, UserCheck, Award, Ban, CheckCircle2, Plus, User, Mail, Phone, Lock, LayoutGrid, BadgeCheck } from 'lucide-react';
+import { Users, UserCheck, Award, Ban, CheckCircle2, Plus, User, Mail, Phone, Lock, LayoutGrid, BadgeCheck, Trash2 } from 'lucide-react';
 import StatCard from '../../components/ui/StatCard';
 import DataTable from '../../components/ui/DataTable';
 import Badge from '../../components/ui/Badge';
@@ -27,6 +27,9 @@ export default function AdminContestantsPage() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null); // row being deleted
+  const [keepAccount, setKeepAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const reload = () => {
     list.reload();
@@ -54,6 +57,18 @@ export default function AdminContestantsPage() {
 
   const toggleVerified = (row) =>
     run(() => api(`/admin/contestants/${row.id}/verify`, { method: 'PATCH', body: { verified: !row.verified } }));
+
+  const confirmDelete = async () => {
+    setDeleteError('');
+    try {
+      const data = await api(`/admin/contestants/${deleting.id}`, { method: 'DELETE', query: { keepAccount: keepAccount || undefined } });
+      setNotice({ tone: 'success', text: data._message });
+      setDeleting(null);
+      reload();
+    } catch (err) {
+      setDeleteError(err.message);
+    }
+  };
 
   const update = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: field === 'verified' ? e.target.checked : e.target.value }));
@@ -166,12 +181,65 @@ export default function AdminContestantsPage() {
                 <button type="button" className="btn btn--outline" style={{ padding: '6px 14px', fontSize: '0.78rem' }} onClick={() => toggleVerified(row)}>
                   <BadgeCheck size={14} /> {row.verified ? 'Unverify' : 'Verify'}
                 </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="btn btn--outline"
+                    style={{ padding: '6px 10px', fontSize: '0.78rem' }}
+                    aria-label={`Delete ${row.name}`}
+                    title={row.votes > 0 ? 'Has votes: suspend instead' : 'Delete (added by mistake)'}
+                    onClick={() => {
+                      setDeleting(row);
+                      setKeepAccount(false);
+                      setDeleteError('');
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             ),
           },
         ]}
         rows={rows}
       />
+
+      <Modal isOpen={Boolean(deleting)} title={deleting ? `Delete ${deleting.name}?` : ''} onClose={() => setDeleting(null)}>
+        {deleting && (
+          <div style={{ display: 'grid', gap: 14, fontSize: '0.88rem' }}>
+            <Notice tone="error">{deleteError}</Notice>
+            {deleting.votes > 0 ? (
+              <p>
+                Fans have already voted for {deleting.name}, so this profile can&rsquo;t be deleted without erasing their votes.
+                Use <strong>Suspend</strong> to hide it from the website instead.
+              </p>
+            ) : (
+              <>
+                <p>
+                  Use this when a contestant was added by mistake. Their profile, photos, posts and messages are removed permanently.
+                </p>
+                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="checkbox" checked={keepAccount} onChange={(e) => setKeepAccount(e.target.checked)} />
+                  Keep their login ({deleting.email}) as a normal fan account
+                </label>
+                <p style={{ color: '#a8a49b', fontSize: '0.8rem' }}>
+                  If the person already used the site as a fan (tickets, payments, votes), their account is always kept as a fan account.
+                </p>
+              </>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {deleting.votes === 0 && (
+                <button type="button" className="btn btn--gold" style={{ background: '#d13b3b', borderColor: '#d13b3b', color: '#fff' }} onClick={confirmDelete}>
+                  <Trash2 size={15} /> Delete permanently
+                </button>
+              )}
+              <button type="button" className="btn btn--outline" onClick={() => setDeleting(null)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal isOpen={isModalOpen} title="Add Contestant" onClose={() => setModalOpen(false)}>
         <Notice tone="error">{formError}</Notice>

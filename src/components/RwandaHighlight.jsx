@@ -1,10 +1,17 @@
 import CountdownTimer from './CountdownTimer';
+import useApi from '../hooks/useApi';
 import './RwandaHighlight.scss';
 
-// Voting window: one month from now, for demo purposes.
-const VOTE_DEADLINE = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000 + 18 * 60 * 1000);
-
+// Counts down to the next category voting deadline (category "End date" set by the admin).
 export default function RwandaHighlight() {
+  const { data } = useApi('/categories');
+  const now = Date.now();
+  const deadlines = (data?.categories ?? [])
+    .map((c) => c.endDate && new Date(c.endDate))
+    .filter((d) => d && d.getTime() > now)
+    .sort((a, b) => a - b);
+  const deadline = deadlines[0];
+
   return (
     <div className="rwanda-highlight">
       <div className="rwanda-highlight__art">
@@ -17,8 +24,14 @@ export default function RwandaHighlight() {
 
       <div className="rwanda-highlight__panel">
         <p className="rwanda-highlight__heading">Voting Ends In</p>
-        <p className="rwanda-highlight__sub">(This competition takes 1 month)</p>
-        <CountdownTimer targetDate={VOTE_DEADLINE} />
+        {deadline ? (
+          <>
+            <p className="rwanda-highlight__sub">({deadline.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })})</p>
+            <CountdownTimer targetDate={deadline} />
+          </>
+        ) : (
+          <p className="rwanda-highlight__sub">Voting dates will be announced soon.</p>
+        )}
       </div>
     </div>
   );

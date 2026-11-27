@@ -68,7 +68,7 @@ export default function AdminAnalyticsPage() {
             <ChartCard title="Votes by Category" sub="All time" type="bar" labels={c.votesByCategory.labels} data={c.votesByCategory.data} label="Votes" color="#3ec95f" />
           </div>
           <div className="dash-page__card-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <ChartCard title="Revenue Over Time" sub="RWF, last 6 months (payments are switched off for now)" type="line" labels={c.revenueByMonth.labels} data={c.revenueByMonth.data} label="Revenue (RWF)" />
+            <ChartCard title="Revenue Over Time" sub="RWF, last 6 months (successful payments)" type="line" labels={c.revenueByMonth.labels} data={c.revenueByMonth.data} label="Revenue (RWF)" />
             <ChartCard title="New Accounts" sub="Last 6 months" type="bar" labels={c.signupsByMonth.labels} data={c.signupsByMonth.data} label="Sign-ups" color="#5b8def" />
           </div>
         </>

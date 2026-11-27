@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Check, Gift, ThumbsUp } from 'lucide-react';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import PageHero from '../components/PageHero';
 import Notice from '../components/ui/Notice';
 import useApi from '../hooks/useApi';
 import { api } from '../api/client';
+import { usePaymentConfig } from '../api/payments';
 import { useAuth } from '../auth/AuthContext';
 import './VotePage.scss';
 
@@ -39,6 +40,7 @@ export default function VotePage() {
   const [shared, setShared] = useState(null); // contestant from the voting link
   const [balance, setBalance] = useState(0); // bonus / purchased votes
   const sharedId = params.get('contestant');
+  const payConfig = usePaymentConfig();
 
   // Voting link: open the contestant's category and count the click once per tab.
   useEffect(() => {
@@ -207,6 +209,15 @@ export default function VotePage() {
                       </>
                     )}
                   </button>
+                  {user?.role === 'FAN' && payConfig?.enabled && (
+                    <Link
+                      to={`/dashboard/fan/vote?contestant=${nominee.id}`}
+                      className="btn btn--outline vote-page__btn"
+                      style={{ marginTop: 8, textDecoration: 'none' }}
+                    >
+                      Buy more votes
+                    </Link>
+                  )}
                   {user?.role === 'FAN' && balance > 0 && (
                     <button
                       type="button"
